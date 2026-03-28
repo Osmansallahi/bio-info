@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bioinformatics QCM — 80 Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0f1a;--surface:#111827;--surface2:#1a2236;--accent:#a855f7;--accent2:#00d4aa;--accent3:#f59e0b;--accent4:#ec4899;--text:#e2e8f0;--muted:#94a3b8;--border:#1e3a5f;--correct:#00d4aa;--wrong:#ec4899;--unanswered:#3b82f6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden;min-height:100vh;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(168,85,247,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+
+  /* HERO */
+  .hero{min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 2rem 4rem;position:relative;z-index:1;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(168,85,247,.14) 0%,transparent 65%);}
+  .badge{display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(168,85,247,.3);padding:.35rem 1.1rem;border-radius:2px;margin-bottom:2rem;}
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease infinite;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,7vw,4.5rem);font-weight:900;line-height:1.05;margin-bottom:1rem;}
+  .hero h1 em{color:var(--accent);font-style:normal;}
+  .hero p{max-width:520px;color:var(--muted);font-size:.95rem;margin-bottom:2.5rem;}
+
+  /* STATS BAR */
+  .stats-bar{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem;}
+  .stat{text-align:center;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--accent);display:block;}
+  .stat-label{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+  .stat-divider{width:1px;background:var(--border);align-self:stretch;}
+
+  /* SCOREBOARD */
+  #scoreboard{background:var(--surface2);border:1px solid rgba(168,85,247,.2);border-radius:12px;padding:1.5rem 2rem;max-width:500px;margin:0 auto 2rem;display:none;}
+  #scoreboard h2{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:.5rem;}
+  .score-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+  .score-row:last-of-type{border:none;}
+  .score-correct{color:var(--correct);}
+  .score-wrong{color:var(--wrong);}
+  .score-skip{color:var(--unanswered);}
+
+  /* PROGRESS BAR */
+  .progress-wrap{max-width:800px;margin:0 auto 1rem;position:relative;z-index:1;}
+  .progress-bar-bg{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+  .progress-bar-fill{height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .4s ease;width:0%;}
+  .progress-label{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);margin-top:.4rem;text-align:right;}
+
+  /* FILTER TABS */
+  .filter-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;max-width:900px;margin:0 auto 2.5rem;position:relative;z-index:1;}
+  .filter-tab{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem 1rem;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;}
+  .filter-tab:hover{border-color:var(--accent);color:var(--accent);}
+  .filter-tab.active{background:rgba(168,85,247,.12);border-color:var(--accent);color:var(--accent);}
+
+  /* QCM CONTAINER */
+  .qcm-container{max-width:800px;margin:0 auto;padding:0 1.5rem 6rem;position:relative;z-index:1;}
+
+  /* CHAPTER HEADER */
+  .chapter-header{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);padding:.5rem 0;margin:2.5rem 0 1.5rem;display:flex;align-items:center;gap:.8rem;}
+  .chapter-header::after{content:'';flex:1;height:1px;background:linear-gradient(var(--border),transparent);}
+
+  /* QUESTION CARD */
+  .q-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.6rem;margin-bottom:1.2rem;transition:border-color .25s;position:relative;}
+  .q-card.answered-correct{border-color:var(--correct);}
+  .q-card.answered-wrong{border-color:var(--wrong);}
+  .q-num{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;}
+  .q-text{font-size:.95rem;color:var(--text);margin-bottom:1.2rem;line-height:1.6;}
+  .options{display:flex;flex-direction:column;gap:.6rem;}
+  .option{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem 1rem;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .2s;font-size:.86rem;color:var(--muted);background:transparent;}
+  .option:hover:not(.disabled){border-color:var(--accent);color:var(--text);background:rgba(168,85,247,.05);}
+  .option.selected{border-color:var(--accent);color:var(--text);background:rgba(168,85,247,.08);}
+  .option.correct{border-color:var(--correct);color:var(--correct);background:rgba(0,212,170,.08);}
+  .option.wrong{border-color:var(--wrong);color:var(--wrong);background:rgba(236,72,153,.08);}
+  .option.reveal-correct{border-color:var(--correct);background:rgba(0,212,170,.05);}
+  .option.disabled{cursor:default;}
+  .opt-letter{font-family:'IBM Plex Mono',monospace;font-size:.7rem;width:20px;height:20px;border-radius:50%;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .explanation{margin-top:1rem;padding:.8rem 1rem;background:rgba(168,85,247,.06);border-left:2px solid var(--accent);border-radius:0 4px 4px 0;font-size:.82rem;color:var(--muted);display:none;}
+  .explanation.show{display:block;}
+  .explanation strong{color:var(--accent);}
+
+  /* BOTTOM BAR */
+  .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,26,.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;z-index:200;}
+  .score-live{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--muted);}
+  .score-live span{color:var(--accent);font-weight:500;}
+  .btn{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.55rem 1.4rem;border-radius:4px;border:none;cursor:pointer;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{opacity:.85;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-danger{background:transparent;border:1px solid rgba(236,72,153,.3);color:var(--accent4);}
+  .btn-danger:hover{background:rgba(236,72,153,.08);}
+  .btn-group{display:flex;gap:.5rem;flex-wrap:wrap;}
+
+  /* BACK LINK */
+  .back-btn{position:fixed;top:1.5rem;left:1.5rem;z-index:100;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);text-decoration:none;border:1px solid rgba(168,85,247,.3);padding:.4rem .9rem;border-radius:3px;background:rgba(10,15,26,.8);backdrop-filter:blur(6px);}
+
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<a class="back-btn" href="./index.html">← Index</a>
+
+<div class="hero">
+  <div class="badge"><span class="dot"></span>Bonus — QCM Interactive Quiz</div>
+  <h1>80 Questions<br><em>Bioinformatics</em> MCQ</h1>
+  <p>Test your knowledge across all four chapters — Biological Databases, Advanced Literature Search, Sequence Alignment, and NGS FastQC.</p>
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-num" id="stat-total">80</span><span class="stat-label">Questions</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num">4</span><span class="stat-label">Chapters</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num" id="stat-answered">0</span><span class="stat-label">Answered</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num" id="stat-score">0%</span><span class="stat-label">Score</span></div>
+  </div>
+  <div id="scoreboard">
+    <h2>🎯 Quiz Complete!</h2>
+    <div class="score-row"><span>Correct answers</span><span class="score-correct" id="sb-correct">—</span></div>
+    <div class="score-row"><span>Wrong answers</span><span class="score-wrong" id="sb-wrong">—</span></div>
+    <div class="score-row"><span>Skipped</span><span class="score-skip" id="sb-skip">—</span></div>
+    <div class="score-row"><span style="font-weight:500;color:var(--text)">Final Score</span><span style="color:var(--accent);font-weight:600" id="sb-pct">—</span></div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">0 / 80 answered</div>
+</div>
+
+<div class="filter-tabs">
+  <button class="filter-tab active" onclick="filterChapter('all')">All Chapters</button>
+  <button class="filter-tab" onclick="filterChapter('ch2')">Ch.2 — Databases</button>
+  <button class="filter-tab" onclick="filterChapter('ch3')">Ch.3 — Literature</button>
+  <button class="filter-tab" onclick="filterChapter('ch4')">Ch.4 — Alignment</button>
+  <button class="filter-tab" onclick="filterChapter('ch5')">Ch.5 — NGS/FastQC</button>
+</div>
+
+<div class="qcm-container" id="qcm-root"></div>
+
+<div class="bottom-bar">
+  <div class="score-live">Score: <span id="live-correct">0</span> correct / <span id="live-wrong">0</span> wrong / <span id="live-left">80</span> remaining</div>
+  <div class="btn-group">
+    <button class="btn btn-outline" onclick="showAll()">Show Explanations</button>
+    <button class="btn btn-danger" onclick="resetQuiz()">Reset</button>
+    <button class="btn btn-primary" onclick="finishQuiz()">Submit Quiz</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // ── CHAPTER 2 — BIOLOGICAL DATABASES (20 questions) ──────────────────────
+  {ch:"ch2", q:"What does INSDC stand for?", opts:["International Nucleotide Sequence Database Collaboration","Integrated National Sequence Data Centre","International NCBI Sequence Data Collection","Indexed Nucleotide and Structure Database Consortium"], ans:0, exp:"INSDC stands for the <strong>International Nucleotide Sequence Database Collaboration</strong>, linking NCBI (GenBank), EMBL-EBI, and DDBJ."},
+  {ch:"ch2", q:"Which three institutions form the INSDC?", opts:["NCBI, EMBL-EBI, and DDBJ","NCBI, UniProt, and PDB","EMBL-EBI, Sanger, and DDBJ","NCBI, PubMed, and Ensembl"], ans:0, exp:"The INSDC links <strong>NCBI (GenBank), EMBL-EBI (Europe), and DDBJ (Japan)</strong> — all three synchronise their sequence data daily."},
+  {ch:"ch2", q:"What type of data do primary databases store?", opts:["Annotated and curated data","Raw sequence data as submitted by researchers","Predicted protein structures only","Literature references"], ans:1, exp:"Primary databases store <strong>raw sequence data as submitted by researchers</strong>. Secondary databases add annotation and derived information on top."},
+  {ch:"ch2", q:"How often is GenBank updated?", opts:["Daily","Weekly","Approximately every two months","Annually"], ans:2, exp:"GenBank is updated on a regular basis, <strong>approximately every two months</strong>."},
+  {ch:"ch2", q:"What does the accession prefix 'NM_' represent?", opts:["Genomic region or assembly","Known RefSeq mRNA","Model RefSeq protein","Known RefSeq RNA"], ans:1, exp:"<strong>NM_</strong> is a Known RefSeq prefix for <strong>experimentally confirmed mRNA transcript sequences</strong>."},
+  {ch:"ch2", q:"What does the accession prefix 'XP_' represent?", opts:["Known RefSeq protein","Known RefSeq mRNA","Model RefSeq protein","Model RefSeq RNA"], ans:2, exp:"<strong>XP_</strong> is a Model RefSeq prefix for <strong>computationally predicted protein sequences</strong> derived from model mRNAs."},
+  {ch:"ch2", q:"Which NCBI database contains all DNA sequence data?", opts:["Nucleotide","Protein","dbSNP","ClinVar"], ans:0, exp:"The <strong>Nucleotide</strong> database at NCBI contains all DNA sequence data deposited, including GenBank and RefSeq entries."},
+  {ch:"ch2", q:"What is ClinVar?", opts:["A database of protein structures","A database of genomic variants and their relationship to human health","A literature database","A database of single nucleotide polymorphisms"], ans:1, exp:"<strong>ClinVar</strong> is a database of genomic variants and their relationship to human health — linking variants to clinical significance and supporting evidence."},
+  {ch:"ch2", q:"EMBL-EBI maintains what kind of databases?", opts:["The world's most comprehensive range of freely available molecular data resources","Paid-access commercial genomic databases","Government-restricted biomedical records","Only protein structure databases"], ans:0, exp:"<strong>EMBL-EBI</strong> maintains the world's most comprehensive range of <strong>freely available and up-to-date molecular databases</strong>."},
+  {ch:"ch2", q:"Which of the following is a GenBank division?", opts:["Whole Genome Shotgun Sequences (WGS)","PubMed Central","AlphaFold DB","ArrayExpress"], ans:0, exp:"<strong>WGS (Whole Genome Shotgun Sequences)</strong> is one of the major GenBank divisions. Others include Complete Microbial Genomes, TSA, HTGs, TLS, and TPA."},
+  {ch:"ch2", q:"What is RefSeq?", opts:["A raw submission database for unannotated sequences","A comprehensive, well-annotated set of reference sequences (genomic, transcript, protein)","A specialised database for microbial genomes only","An image archive for molecular biology"], ans:1, exp:"<strong>RefSeq</strong> is a comprehensive, integrated, well-annotated set of reference sequences covering genomic, transcript, and protein sequences."},
+  {ch:"ch2", q:"What journal annually publishes a database issue cataloguing bioinformatics databases?", opts:["Nature Genetics","Nucleic Acids Research","Bioinformatics","PLOS Genetics"], ans:1, exp:"<strong>Nucleic Acids Research (NAR)</strong> publishes an annual database issue cataloguing hundreds of new and updated bioinformatics databases."},
+  {ch:"ch2", q:"What is OMIM?", opts:["Online Map of Integrated Microarrays","Online Mendelian Inheritance in Man — a database of human genes and genetic phenotypes","A database of protein structures","A clinical trials registry"], ans:1, exp:"<strong>OMIM (Online Mendelian Inheritance in Man)</strong> is a database of human genes and genetic phenotypes with detailed clinical descriptions."},
+  {ch:"ch2", q:"What does a 'curated' database mean?", opts:["Automatically generated with no human review","Expert-reviewed, high-quality entries vetted by specialists","Only updated annually","Restricted to nucleotide sequences"], ans:1, exp:"A <strong>curated database</strong> has entries that are expert-reviewed and verified by specialists, trading volume for quality. Non-curated databases accept submissions automatically."},
+  {ch:"ch2", q:"What is AlphaFold DB, hosted at EMBL-EBI?", opts:["A database of raw DNA sequences","A database of protein structure predictions powered by AI","A genome annotation platform","A literature citation database"], ans:1, exp:"<strong>AlphaFold DB</strong> is a database of protein structure predictions for numerous species, powered by DeepMind's AlphaFold AI model."},
+  {ch:"ch2", q:"What is a 'specialised database'?", opts:["A database restricted to protein sequences","A database focused on a specific organism, disease, or method, often integrating unique data","A database that is always private","A database only available through API"], ans:1, exp:"A <strong>specialised database</strong> is focused on a specific organism, disease, or method, and may integrate unique data (e.g., clinical + genetic) not found in general databases."},
+  {ch:"ch2", q:"What does 'NC_' or 'NG_' as an accession prefix indicate?", opts:["Model RefSeq mRNA","Known RefSeq genomic region or assembly","Model RefSeq RNA","Known RefSeq protein"], ans:1, exp:"<strong>NC_</strong> and <strong>NG_</strong> are Known RefSeq prefixes for <strong>genomic regions or complete assemblies</strong> (chromosomes, organelles)."},
+  {ch:"ch2", q:"What is PubChem, available at NCBI?", opts:["A literature database","A clinical trials registry","A chemical compounds, bioassays, and pathways database","A protein expression database"], ans:2, exp:"<strong>PubChem</strong> at NCBI is a database of chemical compounds, bioassays, and pathways — not biological sequences."},
+  {ch:"ch2", q:"The Gene database at NCBI is described as:", opts:["A raw sequence repository","A one-stop resource for all annotation information about a gene","A database restricted to coding sequences","A database of genetic variants only"], ans:1, exp:"The <strong>Gene database</strong> at NCBI is a one-stop resource for all annotation information about a gene — sequence, expression, phenotypes, variants, literature, and pathways."},
+  {ch:"ch2", q:"Why use a portal search at NCBI or EBI?", opts:["To search a single database with maximum speed","To search across all available databases with a single query","To access private genome data","To submit new sequences"], ans:1, exp:"Portal searches at NCBI and EBI allow you to <strong>search across all available databases simultaneously with a single query</strong>, returning categorised results."},
+
+  // ── CHAPTER 3 — ADVANCED LITERATURE SEARCH (20 questions) ────────────────
+  {ch:"ch3", q:"What does MEDLINE stand for?", opts:["Medical Literature Analysis and Retrieval System Online","Medical Document Library Electronic Network","Multiple Effective Data Library Indexing Engine","Metadata Electronic Library for Nucleotide Entries"], ans:0, exp:"MEDLINE stands for <strong>Medical Literature Analysis and Retrieval System Online</strong>, produced by the US National Library of Medicine (NLM)."},
+  {ch:"ch3", q:"Since when has free access to MEDLINE been available via PubMed?", opts:["1980","1990","1996","2001"], ans:2, exp:"Since <strong>1996</strong>, free access to MEDLINE has been made available to the public via PubMed at NCBI."},
+  {ch:"ch3", q:"Approximately how many citations does PubMed provide access to?", opts:["5 million","15 million","Over 30 million","100 million"], ans:2, exp:"PubMed provides access to over <strong>30 million citations</strong> for biomedical literature — including MEDLINE and additional journal and book citations."},
+  {ch:"ch3", q:"What does the Boolean operator AND do in a PubMed search?", opts:["Broadens the search by including either term","Narrows the search — both terms must appear in results","Excludes the second term from results","Has no effect on results"], ans:1, exp:"<strong>AND</strong> narrows a search — it retrieves only records where <strong>both</strong> search terms are present."},
+  {ch:"ch3", q:"What does the Boolean operator OR do?", opts:["Narrows the search","Excludes a term","Broadens the search — either term can appear","Searches for an exact phrase"], ans:2, exp:"<strong>OR</strong> broadens a search — it retrieves records containing <strong>any</strong> of the search terms, useful for including synonyms."},
+  {ch:"ch3", q:"What does the Boolean operator NOT do?", opts:["Searches for an exact phrase","Combines all search terms","Excludes records containing a specific term","Truncates a search term"], ans:2, exp:"<strong>NOT</strong> excludes records containing a specific term from results. Use with caution as it can accidentally remove relevant papers."},
+  {ch:"ch3", q:"What does the truncation operator '*' do in PubMed?", opts:["Searches for an exact phrase","Replaces any number of characters at the end of a word","Excludes a search term","Limits search to a specific field"], ans:1, exp:"The asterisk (<strong>*</strong>) truncation operator replaces any number of characters. 'Child*' retrieves Child, Children, Childhood, etc."},
+  {ch:"ch3", q:"What does the PubMed field tag [TIAB] search?", opts:["Title only","Abstract only","Words in the article title or abstract","Author affiliations"], ans:2, exp:"<strong>[TIAB]</strong> searches words in the <strong>Title or Abstract</strong> of PubMed records — a very common precision filter."},
+  {ch:"ch3", q:"What does the PubMed field tag [AU] search?", opts:["Article affiliation","Author name","Article URL","Abstract text"], ans:1, exp:"<strong>[AU]</strong> searches the <strong>Author name</strong> field in PubMed records."},
+  {ch:"ch3", q:"What are MeSH terms?", opts:["Machine-enhanced Search Heuristics","Medical Subject Headings — a controlled vocabulary used by NLM to index MEDLINE","Meta-Search Hierarchy terms","Molecular Entity Search Handles"], ans:1, exp:"<strong>MeSH (Medical Subject Headings)</strong> is a controlled vocabulary — standardised terms assigned by NLM specialists to index MEDLINE articles by subject."},
+  {ch:"ch3", q:"Why is MeSH useful in literature searching?", opts:["It searches full text of articles","It groups articles on the same topic regardless of the exact terminology used by authors","It restricts searches to clinical trials only","It only works in Google Scholar"], ans:1, exp:"MeSH ensures articles on the same topic are grouped together <strong>regardless of the exact terminology each author used</strong>, solving the vocabulary variation problem."},
+  {ch:"ch3", q:"What does the field tag [DP] search?", opts:["Disease pathway","Publication date (year)","Drug pharmacology","Data provenance"], ans:1, exp:"<strong>[DP]</strong> searches the <strong>Publication Date</strong> field. Use 2000:2009[DP] for a date range."},
+  {ch:"ch3", q:"Which resource is described as 'a specialised Google search engine for academic literature'?", opts:["PubMed","Scopus","Google Scholar","ScienceDirect"], ans:2, exp:"<strong>Google Scholar</strong> is a specialised Google search engine for academic literature across all disciplines."},
+  {ch:"ch3", q:"What does enclosing a phrase in quotation marks do in PubMed?", opts:["Truncates the phrase","Searches for that exact phrase as written","Excludes the phrase","Searches each word separately with AND"], ans:1, exp:"Enclosing a phrase in <strong>quotation marks</strong> tells PubMed to search for that <strong>exact phrase</strong> rather than treating each word individually."},
+  {ch:"ch3", q:"What is Scopus?", opts:["A specialised bioinformatics database","The largest abstract and citation database of peer-reviewed literature across all scientific domains","A clinical trial registry","A free open-access repository"], ans:1, exp:"<strong>Scopus</strong> is the largest abstract and citation database of peer-reviewed literature across all scientific domains, useful for citation tracking and author metrics."},
+  {ch:"ch3", q:"In the FOXP2 search example: searching ((foxp2) AND (speech development)) AND (mutation) produced how many results?", opts:["604","30,109","92","1,093,123"], ans:2, exp:"The combined search <code>((foxp2) AND (speech development)) AND (mutation)</code> produced <strong>92 results</strong>. Restricting to Title/Abstract further narrowed this to 3."},
+  {ch:"ch3", q:"What does the field tag [MH] search?", opts:["Molecular Homology","MeSH Terms assigned to the article","Main Header of the journal","Molecular Hypothesis"], ans:1, exp:"<strong>[MH]</strong> searches <strong>MeSH Terms</strong> assigned to PubMed articles by NLM specialists."},
+  {ch:"ch3", q:"What is PubMed Clinical Queries?", opts:["A standard PubMed search","A specialised PubMed search for clinical data, filtered by study type","A database of clinical trial protocols","A drug interactions database"], ans:1, exp:"<strong>PubMed Clinical Queries</strong> is a specialised PubMed search interface optimised for searching clinical data, with filters for study type and medical genetics."},
+  {ch:"ch3", q:"What is the first step of a literature search strategy?", opts:["Run the search immediately","Clearly define what information you are looking for","Export results to a citation manager","Apply MeSH terms first"], ans:1, exp:"The <strong>first step</strong> is to clearly define what information you are looking for before beginning any search. This prevents unfocused, inefficient searching."},
+  {ch:"ch3", q:"What does the [PT] field tag restrict a search to?", opts:["Protein sequences","Publication type (letter, clinical trial, review, etc.)","Patient type in clinical studies","Phylogenetic tree data"], ans:1, exp:"<strong>[PT]</strong> restricts a search to a specific <strong>Publication Type</strong> — useful for finding only reviews, clinical trials, randomised controlled trials, etc."},
+
+  // ── CHAPTER 4 — SEQUENCE ALIGNMENT (20 questions) ────────────────────────
+  {ch:"ch4", q:"What is sequence alignment?", opts:["A method for storing sequences in databases","Arranging two or more sequences to identify regions of similarity","A technique for sequencing DNA","A way to predict protein folding"], ans:1, exp:"<strong>Sequence alignment</strong> is a way of arranging two or more sequences of DNA, RNA, or protein to identify regions of similarity."},
+  {ch:"ch4", q:"What is pairwise alignment?", opts:["Aligning more than two sequences at once","Aligning exactly two sequences","Aligning proteins only","Aligning sequences from the same species"], ans:1, exp:"<strong>Pairwise alignment</strong> is the comparison of exactly <strong>two sequences</strong> — the fundamental unit of bioinformatics comparison."},
+  {ch:"ch4", q:"For nucleotide sequences, sequence similarity and sequence identity are:", opts:["Always different","Synonymous (the same)","Only equal when sequences are 100% identical","Independent measures"], ans:1, exp:"For nucleotide sequences, <strong>similarity and identity are synonymous</strong> — there is no distinction between 'similar' and 'identical' at the nucleotide level."},
+  {ch:"ch4", q:"What formula calculates percentage similarity for two equal-length sequences?", opts:["L × (Ly + Lz)","[2L / (Ly + Lz)] × 100","(Li(s) / Ly) × 100","L² / Ly × 100"], ans:1, exp:"For equal-length sequences: <strong>S = [2L / (Ly + Lz)] × 100</strong>, where L = aligned residues with similar characteristics, Ly and Lz = sequence lengths."},
+  {ch:"ch4", q:"The Needleman-Wunsch algorithm performs which type of alignment?", opts:["Local alignment","Semi-global alignment","Global alignment","Multiple sequence alignment"], ans:2, exp:"<strong>Needleman-Wunsch (1970)</strong> is a dynamic programming algorithm that performs <strong>global alignment</strong> — aligning sequences from end to end."},
+  {ch:"ch4", q:"The Smith-Waterman algorithm performs which type of alignment?", opts:["Global alignment","Local alignment","Multiple sequence alignment","Heuristic alignment"], ans:1, exp:"<strong>Smith-Waterman</strong> performs <strong>local alignment</strong> — it finds the regions of highest similarity between two sequences, not necessarily end to end."},
+  {ch:"ch4", q:"What is an 'affine gap penalty'?", opts:["A constant penalty per gap regardless of length","The same penalty for opening and extending gaps","A differential penalty that charges more to open a gap than to extend it","A penalty applied only at terminal gaps"], ans:2, exp:"An <strong>affine gap penalty</strong> uses separate penalties for opening (-y) and extending (-z) a gap: G = y + (k-1)z. It favours one long gap over many small ones."},
+  {ch:"ch4", q:"In a dot matrix representation, what does a diagonal line indicate?", opts:["A region of low similarity","A sequence inversion","A region of high similarity between the two sequences","An insertion in one sequence"], ans:2, exp:"In a dot matrix, dots merge into a <strong>diagonal line</strong> when two sequences consistently match over an extended region — indicating high similarity."},
+  {ch:"ch4", q:"Which alignment algorithm is 'not practical for database searching or multiple sequence alignment'?", opts:["Heuristic algorithm","BLAST","Dynamic programming (exhaustive)","Block-based alignment"], ans:2, exp:"<strong>Dynamic programming (exhaustive methods)</strong> are not practical for database searching or MSA because databases grow exponentially, making the computation time prohibitive."},
+  {ch:"ch4", q:"What is a heuristic alignment algorithm?", opts:["An algorithm that guarantees the optimal solution","An approximation method that trades optimality for speed","A method restricted to protein sequences","A global alignment method only"], ans:1, exp:"A <strong>heuristic algorithm</strong> uses approximations (breaking sequences into 'words') to significantly speed up comparisons at the risk of occasionally missing the true optimal alignment."},
+  {ch:"ch4", q:"What is 'progressive alignment'?", opts:["Aligning sequences from the 3' end progressively","Starting with the most closely related pair and building up the alignment iteratively","Aligning one sequence at a time against a reference","Using blocks to align all sequences simultaneously"], ans:1, exp:"<strong>Progressive alignment</strong> starts with the most similar pair, then iteratively adds less similar sequences. It follows 'once a gap, always a gap'. Used in ClustalW."},
+  {ch:"ch4", q:"What are the three steps of the Needleman-Wunsch dynamic programming algorithm?", opts:["Query, search, report","Initialisation, score calculation, traceback","Alignment, scoring, backtracking","Setup, fill, decode"], ans:1, exp:"The three steps are: <strong>1) Initialisation</strong> (create and initialise the matrix), <strong>2) Score Calculation</strong> (fill the matrix), <strong>3) Traceback</strong> (read the optimal alignment)."},
+  {ch:"ch4", q:"In global alignment, what does 'traceback' start from?", opts:["The top-left corner of the matrix","Any cell with the highest score","The bottom-right corner of the matrix","The cell with a zero score"], ans:2, exp:"In Needleman-Wunsch <strong>global alignment</strong>, traceback starts from the <strong>bottom-right corner</strong> of the matrix where the optimal global score is located."},
+  {ch:"ch4", q:"In local alignment (Smith-Waterman), traceback starts from:", opts:["The top-left corner","The bottom-right corner","The cell with the maximum score anywhere in the matrix","A zero score cell"], ans:2, exp:"In <strong>Smith-Waterman local alignment</strong>, traceback starts from the <strong>maximum score anywhere in the matrix</strong> and proceeds backward until a zero score is reached."},
+  {ch:"ch4", q:"What is the key difference between global and local alignment?", opts:["Global uses more memory","Global aligns end-to-end; local finds the best-scoring subsequence","Local is always more accurate","Global is faster than local"], ans:1, exp:"<strong>Global alignment</strong> aligns sequences from end to end (best for similar-length sequences); <strong>local alignment</strong> finds the best-scoring subsequence match (best for divergent sequences or conserved domains)."},
+  {ch:"ch4", q:"What is a 'semi-global alignment' designed for?", opts:["Aligning two sequences of exactly the same length","Finding the best alignment between a short and a long sequence without penalising terminal gaps","Aligning only protein sequences","Aligning sequences from different species"], ans:1, exp:"<strong>Semi-global alignment</strong> finds the best alignment between a short and a long sequence. Terminal gaps carry no penalty because they arise from differences in sequence length, not indels."},
+  {ch:"ch4", q:"In the Smith-Waterman algorithm, what is the 'fourth movement option'?", opts:["Moving diagonally upward","Score zero if all other movements would produce a negative score","Moving horizontally only","Starting a new alignment from scratch"], ans:1, exp:"The Smith-Waterman <strong>fourth movement option</strong> assigns a score of zero if diagonal, left, and up movements all produce negative scores — allowing the path to restart."},
+  {ch:"ch4", q:"What does 'parallel diagonals' in a dot matrix represent?", opts:["Perfect global alignment","Sequence repeat regions","Completely unrelated sequences","Frame shifts"], ans:1, exp:"<strong>Parallel diagonals</strong> in a dot matrix represent <strong>sequence repeat regions</strong> — the same subsequence appearing multiple times."},
+  {ch:"ch4", q:"What is a major disadvantage of global alignment?", opts:["It is too fast","It may fail for divergent sequences or sequences of very different lengths","It cannot handle gaps","It only works on protein sequences"], ans:1, exp:"A major disadvantage of <strong>global alignment</strong> is that it may fail for divergent sequences or sequences of very different lengths — it forces an end-to-end alignment even when one is inappropriate."},
+  {ch:"ch4", q:"What does dynamic programming use to solve the alignment problem efficiently?", opts:["Random sampling","Breaking the problem into smaller overlapping subproblems and solving each optimally","Only heuristic approximations","Brute force enumeration of all possibilities"], ans:1, exp:"<strong>Dynamic programming</strong> breaks the alignment problem into smaller subproblems, solves each optimally, and uses those solutions to construct the globally optimal solution — avoiding recalculation."},
+
+  // ── CHAPTER 5 — NGS & FASTQC (20 questions) ──────────────────────────────
+  {ch:"ch5", q:"What is a FASTQ file?", opts:["A binary compressed genome file","A text-based file containing read sequences and per-base quality scores","A reference genome file in FASTA format","An alignment output file in SAM format"], ans:1, exp:"A <strong>FASTQ file</strong> is the most common raw data output from NGS platforms. It is a text-based file storing both nucleotide sequences (reads) and quality scores for each base."},
+  {ch:"ch5", q:"How many lines define each read in a FASTQ file?", opts:["2","3","4","6"], ans:2, exp:"Each read in a FASTQ file is defined by exactly <strong>4 lines</strong>: 1) identifier, 2) sequence, 3) '+' sign, 4) quality scores."},
+  {ch:"ch5", q:"What does Line 4 of a FASTQ record contain?", opts:["The sequence identifier","The DNA sequence","A '+' sign","Quality scores as ASCII characters"], ans:3, exp:"<strong>Line 4</strong> of a FASTQ record contains <strong>quality scores encoded as ASCII characters</strong>, one character per base."},
+  {ch:"ch5", q:"What does FastQC do?", opts:["Aligns reads to a reference genome","Performs quality control on raw FASTQ sequence data","Calls variants from BAM files","Converts BCL files to FASTQ"], ans:1, exp:"<strong>FastQC</strong> performs quality control checks on raw FASTQ sequence data, generating summary metrics and an HTML report to assess data quality."},
+  {ch:"ch5", q:"What does Phred score Q30 mean?", opts:["30% error probability","1 error in 30 bases","99.9% base call accuracy (0.1% error rate)","30 correct bases per read"], ans:2, exp:"<strong>Q30</strong> corresponds to a probability of 0.001 (0.1% error rate), meaning <strong>99.9% base call accuracy</strong>. Q = -10 × log₁₀(P)."},
+  {ch:"ch5", q:"In the Per Base Sequence Quality plot, what does the yellow box represent?", opts:["The median quality score","The inter-quartile range (25th to 75th percentile)","The minimum quality score","The 10th percentile whisker"], ans:1, exp:"The <strong>yellow box</strong> in the Per Base Sequence Quality boxplot represents the <strong>inter-quartile range (IQR) from the 25th to the 75th percentile</strong>."},
+  {ch:"ch5", q:"A 'WARNING' for Per Base Sequence Quality is triggered when:", opts:["The lower quartile for any base is <10 OR the median is <25","The lower quartile for any base is <5 OR the median is <20","Any base has zero quality","The GC content is above 60%"], ans:0, exp:"A <strong>WARNING</strong> for Per Base Sequence Quality fires when the lower quartile for any base is <strong>&lt;10 OR the median is &lt;25</strong>."},
+  {ch:"ch5", q:"A 'FAILURE' for Per Base Sequence Quality is triggered when:", opts:["The lower quartile for any base is <10 OR the median is <25","The lower quartile for any base is <5 OR the median is <20","Any read has a mean quality <20","The GC content deviates >15%"], ans:1, exp:"A <strong>FAILURE</strong> fires when the lower quartile for any base is <strong>&lt;5 OR the median is &lt;20</strong>."},
+  {ch:"ch5", q:"What does 'BAD DATA' look like in Per Base Sequence Quality?", opts:["All boxes in the green zone","A smooth normal distribution","General degradation of quality with increasing read length","Low N content throughout"], ans:2, exp:"<strong>Bad data</strong> in Per Base Sequence Quality shows a <strong>general degradation of quality with increasing read length</strong> — a chemistry limitation of sequencing."},
+  {ch:"ch5", q:"What does the Per Sequence GC Content module check?", opts:["GC content at each base position","Distribution of GC content across all reads compared to a modelled normal distribution","The percentage of N bases called","The proportion of each nucleotide at each position"], ans:1, exp:"The <strong>Per Sequence GC Content</strong> module compares the GC content distribution across all reads to a <strong>modelled normal distribution</strong>. Deviations suggest contamination."},
+  {ch:"ch5", q:"What does 'bad data' look like in Per Sequence GC Content?", opts:["A smooth, narrow normal distribution","A sharp secondary peak (sequence contaminant) or a broad secondary peak (species contaminant)","Flat uniform distribution across all GC percentages","Only reads with 50% GC content"], ans:1, exp:"Bad GC content data shows a <strong>sharp secondary peak</strong> (sequence/adapter contamination) or a <strong>broad secondary peak</strong> (species contamination in the library)."},
+  {ch:"ch5", q:"What does the Sequence Duplication Level measure?", opts:["The percentage of bases with quality below 20","How many times each unique sequence appears in the library","The GC content variation across reads","The proportion of N base calls"], ans:1, exp:"The <strong>Sequence Duplication Level</strong> measures how many times each unique sequence appears in the library — high duplication often indicates PCR amplification bias."},
+  {ch:"ch5", q:"Is high sequence duplication always a problem?", opts:["Yes, always indicates PCR bias","No — higher duplication is expected in Transcriptomics (RNA-seq) from highly expressed genes","Yes, it indicates adapter contamination","No — it is only expected for very short reads"], ans:1, exp:"High duplication is <strong>expected in Transcriptomics</strong> — highly expressed genes naturally produce many identical reads. In genomics, high duplication usually indicates PCR amplification bias."},
+  {ch:"ch5", q:"What does the Adapter Content module measure?", opts:["The proportion of adapters in the reference genome","Cumulative percentage of reads containing adapter sequences at each position","The quality score of adapter-trimmed reads","The number of unique adapter sequences"], ans:1, exp:"<strong>Adapter Content</strong> shows the cumulative percentage of reads containing each adapter sequence at each position. Adapters must be removed before alignment."},
+  {ch:"ch5", q:"What does FASTQ ORA offer compared to fastq.gz?", opts:["Better quality scores","Files up to 5× smaller than .fastq.gz files","Higher read length","Faster sequencing"], ans:1, exp:"<strong>FASTQ ORA</strong> is a binary compressed FASTQ format that produces files <strong>up to 5× smaller</strong> than their corresponding .fastq.gz counterparts."},
+  {ch:"ch5", q:"What command runs FastQC on all .fq files in a directory?", opts:["$ fastqc --all","$ fastqc *.fq","$ run_fastqc -d .","$ fastqc -input *.fastq"], ans:1, exp:"The command <code>$ fastqc *.fq</code> runs FastQC on all .fq files in the current directory, processing them serially."},
+  {ch:"ch5", q:"What does MultiQC do?", opts:["Runs multiple quality control tools simultaneously","Aggregates results from multiple FastQC runs into a single HTML report","Performs alignment on multiple FASTQ files","Calls variants from multiple BAM files simultaneously"], ans:1, exp:"<strong>MultiQC</strong> aggregates results from multiple FastQC (and other bioinformatics tool) runs into a <strong>single HTML overview report</strong> — essential for batch NGS experiments."},
+  {ch:"ch5", q:"Per Base Sequence Content WARNING is triggered when:", opts:["The difference between A and T, or G and C is >10% at any position","The GC content deviates >15% from the expected","N content exceeds 5% at any position","Any read has quality below Q20"], ans:0, exp:"Per Base Sequence Content <strong>WARNING</strong> fires when the difference between A and T, or G and C, is <strong>&gt;10%</strong> at any position."},
+  {ch:"ch5", q:"What does 'Sequence Filtering / Trimming' aim to do?", opts:["Remove duplicated reads only","Remove low-quality reads and adapter sequences to improve downstream analysis","Compress FASTQ files","Convert FASTQ to FASTA format"], ans:1, exp:"<strong>Sequence filtering/trimming</strong> removes low-quality bases, short reads after trimming, and adapter contamination to <strong>improve downstream alignment and analysis quality</strong>."},
+  {ch:"ch5", q:"What is the correct order of steps in the NGS bioinformatics workflow?", opts:["Alignment → QC → Trimming → Variant Calling","QC → Alignment → Trimming → Variant Calling","FASTQ → QC → Trimming → Alignment → Variant Calling → Interpretation","FASTQ → Trimming → QC → Alignment → Annotation"], ans:2, exp:"The correct order is: <strong>FASTQ (raw data) → QC (FastQC) → Trimming → Alignment → Variant Calling → Annotation → Interpretation</strong>."},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let state = {};
+questions.forEach((q,i) => state[i] = {answered: false, correct: null});
+let showingAll = false;
+let currentFilter = 'all';
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const root = document.getElementById('qcm-root');
+  root.innerHTML = '';
+
+  const chapters = {
+    ch2: 'Chapter 2 — Biological Databases & Resources',
+    ch3: 'Chapter 3 — Advanced Literature Search',
+    ch4: 'Chapter 4 — Sequence Alignment Theory & Applications',
+    ch5: 'Chapter 5 — Next-Generation Sequencing & FastQC'
+  };
+
+  let lastCh = null;
+  let visIdx = 0;
+
+  questions.forEach((q, i) => {
+    if (currentFilter !== 'all' && q.ch !== currentFilter) return;
+
+    if (q.ch !== lastCh) {
+      const hdr = document.createElement('div');
+      hdr.className = 'chapter-header';
+      hdr.textContent = chapters[q.ch];
+      root.appendChild(hdr);
+      lastCh = q.ch;
+    }
+
+    visIdx++;
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q-${i}`;
+    if (state[i].answered) {
+      card.className += state[i].correct ? ' answered-correct' : ' answered-wrong';
+    }
+
+    const globalNum = i + 1;
+    card.innerHTML = `
+      <div class="q-num">Question ${globalNum} / ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts-${i}">
+        ${q.opts.map((o, oi) => `
+          <div class="option${state[i].answered ? ' disabled' : ''}${getOptionClass(i, oi)}" 
+               onclick="answer(${i}, ${oi})" data-oi="${oi}">
+            <span class="opt-letter">${String.fromCharCode(65+oi)}</span>
+            <span>${o}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="explanation${(state[i].answered || showingAll) ? ' show' : ''}" id="exp-${i}">
+        <strong>Explanation:</strong> ${q.exp}
+      </div>
+    `;
+    root.appendChild(card);
+  });
+
+  updateStats();
+}
+
+function getOptionClass(qi, oi) {
+  if (!state[qi].answered && !showingAll) return '';
+  const q = questions[qi];
+  if (oi === q.ans) return ' reveal-correct';
+  if (state[qi].answered && oi === state[qi].chosen && oi !== q.ans) return ' wrong';
+  return '';
+}
+
+// ── ANSWER ───────────────────────────────────────────────────────────────────
+function answer(qi, oi) {
+  if (state[qi].answered) return;
+  const q = questions[qi];
+  const correct = oi === q.ans;
+  state[qi] = {answered: true, correct, chosen: oi};
+
+  // Update card
+  const card = document.getElementById(`q-${qi}`);
+  card.classList.add(correct ? 'answered-correct' : 'answered-wrong');
+
+  // Update option styles
+  const opts = card.querySelectorAll('.option');
+  opts.forEach((opt, i) => {
+    opt.classList.add('disabled');
+    if (i === q.ans) opt.classList.add('correct');
+    if (i === oi && !correct) opt.classList.add('wrong');
+    opt.style.pointerEvents = 'none';
+  });
+
+  // Show explanation
+  document.getElementById(`exp-${qi}`).classList.add('show');
+
+  updateStats();
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const answered = Object.values(state).filter(s => s.answered).length;
+  const correct = Object.values(state).filter(s => s.correct).length;
+  const wrong = Object.values(state).filter(s => s.answered && !s.correct).length;
+
+  document.getElementById('stat-answered').textContent = answered;
+  document.getElementById('stat-score').textContent = answered > 0 ? Math.round(correct/answered*100)+'%' : '0%';
+  document.getElementById('live-correct').textContent = correct;
+  document.getElementById('live-wrong').textContent = wrong;
+  document.getElementById('live-left').textContent = questions.length - answered;
+
+  const pct = (answered / questions.length * 100).toFixed(0);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${answered} / ${questions.length} answered`;
+}
+
+// ── CONTROLS ─────────────────────────────────────────────────────────────────
+function showAll() {
+  showingAll = !showingAll;
+  document.querySelectorAll('.explanation').forEach(el => el.classList.toggle('show', showingAll));
+}
+
+function resetQuiz() {
+  if (!confirm('Reset all answers?')) return;
+  questions.forEach((q,i) => state[i] = {answered: false, correct: null});
+  showingAll = false;
+  document.getElementById('scoreboard').style.display = 'none';
+  render();
+}
+
+function finishQuiz() {
+  const answered = Object.values(state).filter(s => s.answered).length;
+  const correct = Object.values(state).filter(s => s.correct).length;
+  const wrong = Object.values(state).filter(s => s.answered && !s.correct).length;
+  const skip = questions.length - answered;
+  const pct = Math.round(correct / questions.length * 100);
+
+  document.getElementById('sb-correct').textContent = `${correct} / ${questions.length}`;
+  document.getElementById('sb-wrong').textContent = wrong;
+  document.getElementById('sb-skip').textContent = skip;
+  document.getElementById('sb-pct').textContent = pct + '%';
+  document.getElementById('scoreboard').style.display = 'block';
+  document.getElementById('scoreboard').scrollIntoView({behavior: 'smooth'});
+}
+
+function filterChapter(ch) {
+  currentFilter = ch;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
