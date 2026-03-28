@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biological Databases & Resources</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --accent: #00d4aa;
+    --accent2: #3b82f6;
+    --accent3: #f59e0b;
+    --accent4: #ec4899;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #1e3a5f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,170,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.10) 0%, transparent 60%),
+      var(--bg);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,212,170,0.3);
+    padding: 0.35rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.8s ease 0.15s both;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero p {
+    max-width: 560px;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 3rem;
+    animation: fadeDown 0.8s ease 0.3s both;
+  }
+
+  .objectives {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 700px;
+    animation: fadeDown 0.8s ease 0.45s both;
+  }
+
+  .objective-chip {
+    background: rgba(0,212,170,0.08);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(var(--accent), transparent);
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  section { padding: 5rem 0; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(var(--border), transparent);
+    max-width: 120px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 700;
+    margin-bottom: 3rem;
+    line-height: 1.2;
+  }
+
+  .section-title em { color: var(--accent); font-style: normal; }
+
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.8rem;
+    transition: border-color 0.25s, transform 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent));
+    opacity: 0.6;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover { border-color: var(--card-accent, var(--accent)); transform: translateY(-3px); }
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: rgba(0,212,170,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  .card p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  /* ── DB TYPE TABLE ── */
+  .type-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .type-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .type-table td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(30,58,95,0.5);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+
+  .type-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .type-table td:first-child {
+    color: var(--text);
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    margin: 0.15rem;
+  }
+
+  .tag-green  { background: rgba(0,212,170,0.12);  color: var(--accent); }
+  .tag-blue   { background: rgba(59,130,246,0.12); color: var(--accent2); }
+  .tag-amber  { background: rgba(245,158,11,0.12); color: var(--accent3); }
+  .tag-pink   { background: rgba(236,72,153,0.12); color: var(--accent4); }
+
+  /* ── INSDC DIAGRAM ── */
+  .insdc-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+
+  .insdc-node {
+    text-align: center;
+    padding: 1.5rem 2rem;
+    border-radius: 50%;
+    width: 130px; height: 130px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 0.85rem;
+    position: relative;
+  }
+
+  .insdc-node span { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  .node-ncbi  { background: rgba(0,212,170,0.12); border: 2px solid rgba(0,212,170,0.4);  color: var(--accent); }
+  .node-ebi   { background: rgba(59,130,246,0.12); border: 2px solid rgba(59,130,246,0.4); color: var(--accent2); }
+  .node-ddbj  { background: rgba(245,158,11,0.12); border: 2px solid rgba(245,158,11,0.4); color: var(--accent3); }
+  .node-insdc { background: rgba(236,72,153,0.08); border: 2px dashed rgba(236,72,153,0.4); color: var(--accent4); width: 160px; height: 160px; }
+
+  .arrow { font-size: 1.8rem; color: var(--text-muted); }
+
+  /* ── ACCESSION TABLE ── */
+  .acc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .acc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .acc-prefix {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .acc-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent3);
+  }
+
+  .acc-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── DB POPULAR LIST ── */
+  .db-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .db-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--item-color, var(--accent));
+    border-radius: 0 6px 6px 0;
+    padding: 1.1rem 1.4rem;
+  }
+
+  .db-item strong {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--item-color, var(--accent));
+    margin-bottom: 0.3rem;
+  }
+
+  .db-item p { font-size: 0.83rem; color: var(--text-muted); }
+
+  /* ── TIMELINE (accessing data) ── */
+  .timeline { position: relative; padding-left: 2.5rem; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(var(--accent), transparent);
+  }
+
+  .tl-item {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -2.18rem; top: 0.45rem;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(0,212,170,0.5);
+  }
+
+  .tl-item h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .tl-item p { font-size: 0.83rem; color: var(--text-muted); }
+
+  /* ── SPECIALISED section ── */
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .spec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.25s, transform 0.25s;
+  }
+
+  .spec-card:hover { border-color: var(--accent2); transform: translateY(-3px); }
+
+  .spec-card .emoji { font-size: 2rem; margin-bottom: 0.8rem; display: block; }
+
+  .spec-card h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+  }
+
+  .spec-card p { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── SUMMARY ── */
+  .summary-box {
+    background: linear-gradient(135deg, rgba(0,212,170,0.06), rgba(59,130,246,0.06));
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 12px;
+    padding: 3rem;
+  }
+
+  .summary-box ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .summary-box li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .summary-box li::before {
+    content: '▹';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; right: 0;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+  }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    position: relative;
+  }
+
+  .nav-dot:hover { background: var(--accent); transform: scale(1.4); }
+  .nav-dot.active { background: var(--accent); transform: scale(1.2); }
+
+  .nav-dot[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    right: 1.4rem;
+    top: -0.3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(8px); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Fixed nav dots -->
+<nav id="nav">
+  <div class="nav-dot" title="Home" onclick="scrollTo(0)"></div>
+  <div class="nav-dot" title="What are Databases?" onclick="scrollTo(1)"></div>
+  <div class="nav-dot" title="Primary & Secondary" onclick="scrollTo(2)"></div>
+  <div class="nav-dot" title="NCBI" onclick="scrollTo(3)"></div>
+  <div class="nav-dot" title="EMBL-EBI" onclick="scrollTo(4)"></div>
+  <div class="nav-dot" title="Accessing Data" onclick="scrollTo(5)"></div>
+  <div class="nav-dot" title="Popular Databases" onclick="scrollTo(6)"></div>
+  <div class="nav-dot" title="Accession Numbers" onclick="scrollTo(7)"></div>
+  <div class="nav-dot" title="Specialised DBs" onclick="scrollTo(8)"></div>
+  <div class="nav-dot" title="Summary" onclick="scrollTo(9)"></div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero" id="s0">
+  <div class="badge">Bioinformatics — Chapter 2</div>
+  <h1>Biological <span>Databases</span><br>&amp; Resources</h1>
+  <p>A complete guide to understanding how bioinformatics data is stored, organised, and accessed across the world's leading repositories.</p>
+  <div class="objectives">
+    <span class="objective-chip">🗄️ Database types &amp; structure</span>
+    <span class="objective-chip">🔬 NCBI &amp; EBI resources</span>
+    <span class="objective-chip">🔑 Accession numbers</span>
+    <span class="objective-chip">🧬 Gene &amp; sequence data</span>
+    <span class="objective-chip">🌐 Specialised databases</span>
+  </div>
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ WHAT ARE DATABASES ═══════════════════ -->
+<section id="s1">
+  <div class="container reveal">
+    <div class="section-label">01 — Introduction</div>
+    <h2 class="section-title">What Are Biological <em>Databases?</em></h2>
+
+    <p style="color:var(--text-muted); max-width:700px; margin-bottom:2.5rem; font-size:0.95rem;">
+      The field of bioinformatics relies on a vast ecosystem of online databases and resources. A researcher must know which databases exist, what tools are available to mine them, and how to search across resources efficiently.
+    </p>
+
+    <div class="cards-grid" style="margin-bottom:3rem;">
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">🔓</div>
+        <h3>Public or Private</h3>
+        <p>Databases may be openly accessible or require registration/permission. This determines both who can access the data and who can submit to it.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent2)">
+        <div class="card-icon">🧬</div>
+        <h3>Data Types</h3>
+        <p>They store protein sequences, nucleotide sequences, 3D structures, literature references, and functional annotations, among many other data types.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent3)">
+        <div class="card-icon">🎯</div>
+        <h3>Scope</h3>
+        <p>A database can be <strong>generalised</strong> (covering many organisms and data types) or <strong>specialised</strong> (focused on a specific disease, organism, or method).</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent4)">
+        <div class="card-icon">✅</div>
+        <h3>Curation</h3>
+        <p>Curated databases have expert-reviewed, high-quality entries. Non-curated databases accept submissions automatically, trading quality for volume.</p>
+      </div>
+    </div>
+
+    <div class="section-label">Database characteristics</div>
+    <div style="overflow-x:auto;">
+      <table class="type-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Option A</th>
+            <th>Option B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access</td>
+            <td><span class="tag tag-green">Public</span></td>
+            <td><span class="tag tag-pink">Private</span></td>
+          </tr>
+          <tr>
+            <td>Content focus</td>
+            <td><span class="tag tag-blue">Generalised</span></td>
+            <td><span class="tag tag-amber">Specialised</span></td>
+          </tr>
+          <tr>
+            <td>Data quality</td>
+            <td><span class="tag tag-green">Curated</span></td>
+            <td><span class="tag tag-pink">Non-curated</span></td>
+          </tr>
+          <tr>
+            <td>Organisation</td>
+            <td><span class="tag tag-blue">Sequence-centred</span></td>
+            <td><span class="tag tag-amber">Genome-centred</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--text-muted); font-size:0.8rem; margin-top:0.8rem;">
+      💡 The journal <strong>Nucleic Acids Research (NAR)</strong> publishes a yearly database issue cataloguing hundreds of new and updated bioinformatics databases — a key resource for the community.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ PRIMARY & SECONDARY ═══════════════════ -->
+<section id="s2">
+  <div class="container reveal">
+    <div class="section-label">02 — Database Types</div>
+    <h2 class="section-title">Primary vs <em>Secondary</em> Databases</h2>
+
+    <div class="cards-grid" style="margin-bottom:3rem;">
+      <div class="card" style="--card-accent:var(--accent); grid-column: span 1;">
+        <div class="card-icon" style="font-size:1.8rem;">🥇</div>
+        <h3>Primary Databases</h3>
+        <p style="margin-bottom:1rem;">Contain the <strong>original raw sequence data</strong> as submitted by researchers. They are the starting point for all biological sequence information.</p>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Examples: GenBank (NCBI), EMBL (EBI), DDBJ — all part of INSDC.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent2);">
+        <div class="card-icon" style="font-size:1.8rem;">🥈</div>
+        <h3>Secondary Databases</h3>
+        <p style="margin-bottom:1rem;">Built on top of primary data. They provide <strong>in-depth annotation, analysis, and derived information</strong> — adding biological meaning beyond raw sequences.</p>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Examples: UniProt, RefSeq, Ensembl, PDB.</p>
+      </div>
+    </div>
+
+    <div class="section-label">INSDC — The International Nucleotide Sequence Database Collaboration</div>
+    <p style="color:var(--text-muted); max-width:650px; margin-bottom:2rem; font-size:0.9rem;">
+      Genomic sequence data is shared across three public databases that synchronise their data daily. Each has its own accession numbers, tools, and submission system.
+    </p>
+    <div class="insdc-wrap">
+      <div class="insdc-node node-ncbi">NCBI<span>GenBank<br>USA</span></div>
+      <div class="arrow">⟷</div>
+      <div class="insdc-node node-insdc">INSDC</div>
+      <div class="arrow">⟷</div>
+      <div class="insdc-node node-ebi">EMBL<br>-EBI<span>Europe</span></div>
+      <div class="arrow" style="display:none;">⟷</div>
+      <div class="insdc-node node-ddbj">DDBJ<span>Japan</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ NCBI ═══════════════════ -->
+<section id="s3">
+  <div class="container reveal">
+    <div class="section-label">03 — NCBI</div>
+    <h2 class="section-title">National Centre for Biotechnology <em>Information</em></h2>
+
+    <div class="cards-grid" style="margin-bottom:3rem;">
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">🏛️</div>
+        <h3>What is NCBI?</h3>
+        <p>A National Institute of Health (NIH) funded initiative established to store and disseminate molecular biology information. It has grown dramatically since the completion of the Human Genome Project and the reduction in sequencing costs.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent3)">
+        <div class="card-icon">🧱</div>
+        <h3>GenBank</h3>
+        <p>The NIH genetic sequence database — an annotated collection of all publicly available DNA sequences. It is part of INSDC and is updated approximately <strong>every two months</strong>.</p>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:1rem;">GenBank Divisions</div>
+    <div class="db-list" style="margin-bottom:3rem;">
+      <div class="db-item" style="--item-color:var(--accent)">
+        <strong>Complete Microbial Genomes</strong>
+        <p>Full genome sequences from microorganisms.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent2)">
+        <strong>WGS — Whole Genome Shotgun</strong>
+        <p>Large-scale random sequencing of entire genomes.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent3)">
+        <strong>TSA — Transcriptome Shotgun Assembly</strong>
+        <p>Assembled mRNA/cDNA sequences from transcriptomics experiments.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent4)">
+        <strong>HTGs — High-throughput Genomic Sequences</strong>
+        <p>Unfinished genome sequences from large-scale projects.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent)">
+        <strong>TLS — Targeted Locus Study</strong>
+        <p>Sequences from targeted sequencing of specific gene regions.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent2)">
+        <strong>TPA — Third Party Annotation</strong>
+        <p>Entries assembled from existing sequences with new annotation.</p>
+      </div>
+    </div>
+
+    <div class="section-label">NCBI covers far more than just DNA</div>
+    <div class="cards-grid">
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">🔬</div>
+        <h3>DNA &amp; RNA</h3>
+        <p>Assembly, BioProject, BioSample, CCDS, dbEST, dbGSS, RefSeq, SRA, UniGene.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent2)">
+        <div class="card-icon">🧪</div>
+        <h3>Genes &amp; Expression</h3>
+        <p>Gene, GEO Profiles, GEO DataSets, HomoloGene, PopSet.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent3)">
+        <div class="card-icon">🏥</div>
+        <h3>Genetics &amp; Medicine</h3>
+        <p>ClinVar, OMIM, ClinicalTrials.gov, dbGaP — linking genomics to health.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent4)">
+        <div class="card-icon">📚</div>
+        <h3>Literature</h3>
+        <p>PubMed, PubMed Central, Bookshelf — biomedical literature and books.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">⚗️</div>
+        <h3>Chemicals</h3>
+        <p>PubChem — chemical compounds, bioassays, and pathways.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent2)">
+        <div class="card-icon">🔧</div>
+        <h3>Analysis Tools</h3>
+        <p>BLAST, Primer-BLAST, Genome Workbench, Sequence Viewer, ProSplign.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ EMBL-EBI ═══════════════════ -->
+<section id="s4">
+  <div class="container reveal">
+    <div class="section-label">04 — EMBL-EBI</div>
+    <h2 class="section-title">European Bioinformatics <em>Institute</em></h2>
+
+    <p style="color:var(--text-muted); max-width:680px; margin-bottom:2.5rem; font-size:0.95rem;">
+      EMBL-EBI maintains the world's most comprehensive range of freely available and up-to-date molecular databases. It also offers both online and live training events for using their resources.
+    </p>
+
+    <div class="cards-grid" style="margin-bottom:3rem;">
+      <div class="card" style="--card-accent:var(--accent2)">
+        <div class="card-icon">🔮</div>
+        <h3>AlphaFold DB</h3>
+        <p>Database of protein structure predictions for numerous species, powered by DeepMind's AlphaFold AI model.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">📊</div>
+        <h3>ArrayExpress</h3>
+        <p>A database of functional genomics experiments including microarray and RNAseq expression data, typically linked to publications.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent3)">
+        <div class="card-icon">🖼️</div>
+        <h3>BioImage Archive</h3>
+        <p>EMBL-EBI's general purpose image archive, accepting molecular biology imaging data associated with peer-reviewed publications.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent4)">
+        <div class="card-icon">🧬</div>
+        <h3>Ensembl</h3>
+        <p>A resource for high-quality integrated genome annotation data — browse genes, transcripts, and regulatory features across many species.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent)">
+        <div class="card-icon">🔗</div>
+        <h3>UniProt</h3>
+        <p>Universal Protein Resource — the leading database for protein sequence and functional annotation data.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent2)">
+        <div class="card-icon">🏗️</div>
+        <h3>PDBe</h3>
+        <p>Protein Data Bank Europe — collection of experimentally determined 3D structural data of biological macromolecules.</p>
+      </div>
+      <div class="card" style="--card-accent:var(--accent3)">
+        <div class="card-icon">🏷️</div>
+        <h3>InterPro</h3>
+        <p>Database of protein families, domains, and conserved sites — integrating data from multiple member databases.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ ACCESSING DATA ═══════════════════ -->
+<section id="s5">
+  <div class="container reveal">
+    <div class="section-label">05 — Accessing Data</div>
+    <h2 class="section-title">Why and How to <em>Access</em> Sequence Data</h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:3rem; flex-wrap:wrap;">
+      <div>
+        <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.9rem;">Common reasons a researcher needs to access sequence data:</p>
+        <div class="timeline">
+          <div class="tl-item">
+            <h4>Know functional region sequences</h4>
+            <p>Identify the exact sequence of a region known to have a biological function (e.g., a promoter or coding sequence).</p>
+          </div>
+          <div class="tl-item">
+            <h4>Identify variants</h4>
+            <p>Find nucleotide changes or mutations relative to a reference sequence.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Comparative analysis</h4>
+            <p>Compare your sequence of interest to those previously identified and deposited by others.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Disease associations</h4>
+            <p>Find diseases associated with variation in a specific gene of interest.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Retrieve published datasets</h4>
+            <p>Access raw sequencing data from a previously published study for re-analysis.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.9rem;">Key principles for efficient data retrieval:</p>
+        <div class="card" style="--card-accent:var(--accent); margin-bottom:1rem;">
+          <h3>Be specific about your query</h3>
+          <p>It is critical to be clear about what data type you are looking for before starting a search. Different tools behave differently depending on query type.</p>
+        </div>
+        <div class="card" style="--card-accent:var(--accent2); margin-bottom:1rem;">
+          <h3>Use Portal Search</h3>
+          <p>Both NCBI and EBI provide portal search pages that let you search across <em>all available databases</em> with a single query, returning categorised results.</p>
+        </div>
+        <div class="card" style="--card-accent:var(--accent3);">
+          <h3>Tools link annotations</h3>
+          <p>Most tools have been developed to link to all related annotations for a given query — genes link to proteins, to literature, to clinical data, and so on.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ POPULAR DATABASES ═══════════════════ -->
+<section id="s6">
+  <div class="container reveal">
+    <div class="section-label">06 — Popular Databases</div>
+    <h2 class="section-title">Key Databases to <em>Know</em></h2>
+
+    <div class="db-list">
+      <div class="db-item" style="--item-color:var(--accent)">
+        <strong>Gene</strong>
+        <p>One-stop resource for all annotation information about a gene — sequence, expression, phenotypes, variants, literature, pathways, and more.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent2)">
+        <strong>PubMed</strong>
+        <p>Extensive biomedical literature database — search millions of abstracts and full-text articles in the life sciences.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent3)">
+        <strong>Nucleotide</strong>
+        <p>Database of all DNA sequence data deposited at NCBI — includes GenBank, RefSeq, and other sources.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent4)">
+        <strong>dbSNP</strong>
+        <p>Database of single nucleotide polymorphisms and other small genetic variants in humans and other organisms.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent)">
+        <strong>Protein</strong>
+        <p>Database of protein sequences from GenBank CDS translations, RefSeq, UniProt/Swiss-Prot, and other sources.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent2)">
+        <strong>RefSeq</strong>
+        <p>Comprehensive, integrated, well-annotated set of reference sequences — genomic, transcript, and protein — maintained by NCBI.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent3)">
+        <strong>OMIM</strong>
+        <p>Online Mendelian Inheritance in Man — database of human genes and genetic phenotypes with clinical descriptions.</p>
+      </div>
+      <div class="db-item" style="--item-color:var(--accent4)">
+        <strong>ClinVar</strong>
+        <p>Database of genomic variants and their relationship to human health — links variants to clinical significance and supporting evidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ ACCESSION NUMBERS ═══════════════════ -->
+<section id="s7">
+  <div class="container reveal">
+    <div class="section-label">07 — Accession Numbers</div>
+    <h2 class="section-title">Reading <em>Accession</em> Number Prefixes</h2>
+
+    <p style="color:var(--text-muted); max-width:660px; margin-bottom:2rem; font-size:0.9rem;">
+      Every GenBank record — consisting of both a sequence and its annotations — is assigned a unique identifier called an <strong>accession number</strong>. The prefix tells you what kind of sequence it is.
+    </p>
+
+    <div class="acc-grid">
+      <div class="acc-card">
+        <div class="acc-prefix">NC_ / NG_</div>
+        <div class="acc-type">Known RefSeq</div>
+        <div class="acc-desc">Genomic regions or complete assembly (chromosomes, organelles).</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">NM_</div>
+        <div class="acc-type">Known RefSeq</div>
+        <div class="acc-desc">Experimentally confirmed mRNA transcript sequences.</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">NR_</div>
+        <div class="acc-type">Known RefSeq</div>
+        <div class="acc-desc">Non-coding RNA sequences (lncRNA, miRNA, rRNA, etc.).</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">NP_</div>
+        <div class="acc-type">Known RefSeq</div>
+        <div class="acc-desc">Protein sequences derived from known RefSeq mRNAs.</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">NT_ / NW_</div>
+        <div class="acc-type">Known RefSeq</div>
+        <div class="acc-desc">Genomic contigs or scaffolds — unfinished assembly pieces.</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">XM_</div>
+        <div class="acc-type">Model RefSeq</div>
+        <div class="acc-desc">Computationally predicted mRNA — not experimentally confirmed.</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">XR_</div>
+        <div class="acc-type">Model RefSeq</div>
+        <div class="acc-desc">Computationally predicted non-coding RNA.</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-prefix">XP_</div>
+        <div class="acc-type">Model RefSeq</div>
+        <div class="acc-desc">Computationally predicted protein — derived from model mRNA.</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:8px; padding:1.5rem; margin-top:2rem;">
+      <p style="font-family:'IBM Plex Mono',monospace; font-size:0.82rem; color:var(--accent3);">
+        💡 Rule of thumb: <strong>N prefix = known/reviewed</strong> &nbsp;·&nbsp; <strong>X prefix = predicted/model</strong><br>
+        Second letter: <strong>C/G = genomic</strong> &nbsp;·&nbsp; <strong>M = mRNA</strong> &nbsp;·&nbsp; <strong>R = RNA</strong> &nbsp;·&nbsp; <strong>P = protein</strong> &nbsp;·&nbsp; <strong>T/W = contig/scaffold</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ SPECIALISED DBs ═══════════════════ -->
+<section id="s8">
+  <div class="container reveal">
+    <div class="section-label">08 — Specialised Databases</div>
+    <h2 class="section-title">Beyond NCBI &amp; EBI — <em>Specialised</em> Resources</h2>
+
+    <p style="color:var(--text-muted); max-width:680px; margin-bottom:2.5rem; font-size:0.9rem;">
+      A large number of specialised databases exist for specific organisms, diseases, or data types. Most of their sequences are also in GenBank/EMBL/DDBJ, but they additionally integrate data not found elsewhere (e.g., clinical information + genetic data) and offer dedicated analysis and visualisation tools.
+    </p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <span class="emoji">🦟</span>
+        <h4>PlasmoDB</h4>
+        <p>Plasmodium (malaria parasite) genomics — VEuPathDB project.</p>
+      </div>
+      <div class="spec-card">
+        <span class="emoji">🧫</span>
+        <h4>Sanger Institute</h4>
+        <p>1000 Genomes, Cancer Gene Census, bacterial &amp; bacteriophage data.</p>
+      </div>
+      <div class="spec-card">
+        <span class="emoji">🦠</span>
+        <h4>GISAID</h4>
+        <p>Global initiative for sharing all influenza data — extended to SARS-CoV-2. Over 16 million sequences shared.</p>
+      </div>
+      <div class="spec-card">
+        <span class="emoji">📈</span>
+        <h4>GWAS Catalog</h4>
+        <p>NHGRI-EBI catalogue of human genome-wide association studies (GWAS).</p>
+      </div>
+      <div class="spec-card">
+        <span class="emoji">🔒</span>
+        <h4>EGA</h4>
+        <p>European Genome-phenome Archive — permanent archive for sensitive human genetic &amp; phenotypic data requiring controlled access.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════ SUMMARY ═══════════════════ -->
+<section id="s9">
+  <div class="container reveal">
+    <div class="section-label">09 — Summary</div>
+    <h2 class="section-title">What You Should <em>Remember</em></h2>
+
+    <div class="summary-box">
+      <ul>
+        <li>Databases store different types of biological data — nucleotides, proteins, structures, literature, and clinical information.</li>
+        <li>Primary databases store raw sequence data as submitted; secondary databases add expert annotation and derived information.</li>
+        <li>The INSDC links NCBI (GenBank), EMBL-EBI, and DDBJ — all three synchronise their sequence data daily.</li>
+        <li>NCBI and EBI are the two most popular bioinformatics resource hubs, each containing dozens of databases.</li>
+        <li>Knowledge of which databases exist makes it far easier to find specific information for your research.</li>
+        <li>Portal search tools at NCBI and EBI allow you to query all available databases simultaneously with a single search term.</li>
+        <li>Accession number prefixes encode the type and status (known vs. predicted) of a sequence record.</li>
+        <li>Specialised databases are invaluable for organism/disease-specific data and often integrate clinical context not found elsewhere.</li>
+      </ul>
+    </div>
+
+    <p style="text-align:center; margin-top:3rem; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; font-size:0.75rem; letter-spacing:0.1em;">
+      END OF CHAPTER 2 — Bioinformatics · Biological Databases &amp; Resources
+    </p>
+  </div>
+</section>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const dots = document.querySelectorAll('.nav-dot');
+
+  function scrollTo(i) {
+    sections[i].scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Active dot on scroll
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = [...sections].indexOf(e.target);
+        dots.forEach((d,i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => obs.observe(s));
+
+  // Reveal on scroll
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
