@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 5 — NGS & FastQC Quality Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0f1a;--surface:#111827;--surface2:#1a2236;--accent:#ec4899;--accent2:#3b82f6;--accent3:#00d4aa;--accent4:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--border:#1e3a5f;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(236,72,153,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(236,72,153,.04) 1px,transparent 1px);background-size:70px 70px;pointer-events:none;z-index:0;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4rem 2rem;position:relative;z-index:1;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(236,72,153,.14) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(59,130,246,.08) 0%,transparent 60%);}
+  .badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(236,72,153,.3);padding:.35rem 1.1rem;border-radius:2px;margin-bottom:2rem;animation:fadeUp .8s ease both;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,7vw,4.8rem);font-weight:900;line-height:1.05;margin-bottom:1.2rem;animation:fadeUp .8s ease .12s both;}
+  .hero h1 em{color:var(--accent);font-style:normal;}
+  .hero p{max-width:540px;color:var(--muted);font-size:1rem;margin-bottom:3rem;animation:fadeUp .8s ease .24s both;}
+  .chips{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s ease .36s both;}
+  .chip{background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);border-radius:4px;padding:.4rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent);}
+  .scroll-cue{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+  .scroll-cue::after{content:'';width:1px;height:40px;background:linear-gradient(var(--accent),transparent);}
+  .container{max-width:1100px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
+  section{padding:5rem 0;}
+  .section-label{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.8rem;}
+  .section-label::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(var(--border),transparent);}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin-bottom:2.5rem;line-height:1.2;}
+  .section-title em{color:var(--accent);font-style:normal;}
+  hr.div{border:none;height:1px;background:linear-gradient(transparent,var(--border),transparent);}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.4rem;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.6rem;transition:border-color .25s,transform .25s;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c,var(--accent));opacity:.5;}
+  .card:hover{border-color:var(--c,var(--accent));transform:translateY(-3px);}
+  .card:hover::before{opacity:1;}
+  .card-icon{font-size:1.5rem;margin-bottom:1rem;}
+  .card h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:.5rem;}
+  .card p{color:var(--muted);font-size:.86rem;line-height:1.65;}
+  .db-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;}
+  .db-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c,var(--accent));border-radius:0 6px 6px 0;padding:1.1rem 1.4rem;}
+  .db-item strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--c,var(--accent));margin-bottom:.3rem;}
+  .db-item p{font-size:.82rem;color:var(--muted);}
+  .summary-box{background:linear-gradient(135deg,rgba(236,72,153,.06),rgba(59,130,246,.06));border:1px solid rgba(236,72,153,.2);border-radius:12px;padding:3rem;}
+  .summary-box ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;}
+  .summary-box li{display:flex;gap:.75rem;align-items:flex-start;font-size:.88rem;color:var(--muted);}
+  .summary-box li::before{content:'▹';color:var(--accent);flex-shrink:0;margin-top:.1rem;}
+  nav{position:fixed;top:0;right:0;padding:1.5rem;display:flex;flex-direction:column;gap:.5rem;z-index:100;}
+  .ndot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s;position:relative;}
+  .ndot:hover,.ndot.active{background:var(--accent);transform:scale(1.3);}
+  .ndot[title]:hover::after{content:attr(title);position:absolute;right:1.4rem;top:-.3rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:.68rem;padding:.25rem .6rem;border-radius:3px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;}
+  .back-btn{position:fixed;top:1.5rem;left:1.5rem;z-index:100;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);text-decoration:none;border:1px solid rgba(236,72,153,.3);padding:.4rem .9rem;border-radius:3px;background:rgba(10,15,26,.8);backdrop-filter:blur(6px);}
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+  .info-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:1.4rem 1.6rem;font-size:.88rem;color:var(--muted);}
+  .info-box strong{color:var(--accent2);}
+  .warn-box{background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);border-radius:8px;padding:1.4rem 1.6rem;font-size:.88rem;color:var(--muted);}
+  .warn-box strong{color:var(--accent);}
+  code{font-family:'IBM Plex Mono',monospace;background:rgba(255,255,255,.06);padding:.1rem .35rem;border-radius:3px;font-size:.83em;color:var(--accent3);}
+
+  /* FASTQ FORMAT */
+  .fastq-box{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1.2rem 1.5rem;font-family:'IBM Plex Mono',monospace;font-size:.82rem;line-height:1.9;}
+  .fastq-box .l1{color:var(--accent4);}
+  .fastq-box .l2{color:var(--accent3);}
+  .fastq-box .l3{color:var(--muted);}
+  .fastq-box .l4{color:var(--accent);}
+  .fastq-box .anno{font-size:.72rem;color:var(--muted);margin-left:1.5rem;}
+
+  /* QC METRICS */
+  .qc-metric{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.4rem;margin-bottom:1.2rem;}
+  .qc-metric-header{display:flex;align-items:center;gap:1rem;margin-bottom:.8rem;}
+  .qc-metric-name{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:500;color:var(--text);}
+  .qc-status{font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:.2rem .6rem;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;}
+  .qc-status.warn{background:rgba(245,158,11,.12);color:var(--accent4);}
+  .qc-status.fail{background:rgba(236,72,153,.12);color:var(--accent);}
+  .qc-desc{font-size:.83rem;color:var(--muted);margin-bottom:.5rem;}
+  .qc-thresholds{display:flex;gap:1rem;flex-wrap:wrap;}
+  .qc-t{font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:.2rem .6rem;border-radius:3px;}
+  .qc-t.w{background:rgba(245,158,11,.1);color:var(--accent4);}
+  .qc-t.f{background:rgba(236,72,153,.1);color:var(--accent);}
+
+  /* NGS WORKFLOW */
+  .workflow{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:flex-start;margin:1.5rem 0;}
+  .wf-step{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem 1.1rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;text-align:center;min-width:90px;}
+  .wf-step.active{background:rgba(236,72,153,.12);border-color:var(--accent);color:var(--accent);}
+  .wf-arrow{color:var(--muted);font-size:1.2rem;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<a class="back-btn" href="./index.html">← Index</a>
+
+<nav id="nav">
+  <div class="ndot" title="Home"></div>
+  <div class="ndot" title="NGS Overview"></div>
+  <div class="ndot" title="FASTQ Format"></div>
+  <div class="ndot" title="FastQC Tool"></div>
+  <div class="ndot" title="QC Metrics — Quality"></div>
+  <div class="ndot" title="QC Metrics — Content"></div>
+  <div class="ndot" title="QC Metrics — Other"></div>
+  <div class="ndot" title="Interpreting FastQC"></div>
+  <div class="ndot" title="Summary"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="s0">
+  <div class="badge">Bioinformatics — Chapter 5</div>
+  <h1>Next-Generation Sequencing<br><em>FastQC</em> Quality Control</h1>
+  <p>Learn to assess, interpret, and act on raw NGS sequencing data quality — before any downstream analysis begins.</p>
+  <div class="chips">
+    <span class="chip">🧬 NGS Workflow</span>
+    <span class="chip">📄 FASTQ Format</span>
+    <span class="chip">🔬 FastQC</span>
+    <span class="chip">📊 QC Metrics</span>
+    <span class="chip">✂️ Trimming</span>
+  </div>
+  <div class="scroll-cue">scroll</div>
+</section>
+<hr class="div">
+
+<!-- NGS OVERVIEW -->
+<section id="s1">
+<div class="container reveal">
+  <div class="section-label">01 — NGS Overview</div>
+  <h2 class="section-title">The NGS Bioinformatics <em>Workflow</em></h2>
+
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2rem;font-size:.92rem;">Next-Generation Sequencing (NGS) produces massive amounts of raw sequence data. Before any biological interpretation is possible, the data must pass through a standardised bioinformatics analysis pipeline.</p>
+
+  <div class="workflow">
+    <div class="wf-step">🧬<br>Biological Question</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">🔬<br>Experimental Design</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">📚<br>Library Prep</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">⚡<br>Sequencing</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step active">📄<br>FASTQ Raw Data</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step active">✅<br>QC (FastQC)</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">✂️<br>Trimming</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">🗺️<br>Alignment</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">🔍<br>Variant Calling</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step">🧠<br>Interpretation</div>
+  </div>
+
+  <div class="cards">
+    <div class="card" style="--c:var(--accent)">
+      <div class="card-icon">🔎</div>
+      <h3>Quality Control Step</h3>
+      <p>QC is performed on raw FASTQ files immediately after sequencing. Problems detected here — if not corrected — will propagate and corrupt every downstream analysis step.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2)">
+      <div class="card-icon">✂️</div>
+      <h3>Trimming</h3>
+      <p>If QC reveals quality issues (low-quality bases, adapter contamination), reads are trimmed or filtered before alignment. Tools: Trimmomatic, Cutadapt, fastp.</p>
+    </div>
+    <div class="card" style="--c:var(--accent3)">
+      <div class="card-icon">🗺️</div>
+      <h3>Alignment</h3>
+      <p>Trimmed FASTQ reads are aligned to a reference genome (FASTA + GTF/GFF), producing SAM/BAM files that can be used for variant calling or expression quantification.</p>
+    </div>
+    <div class="card" style="--c:var(--accent4)">
+      <div class="card-icon">📁</div>
+      <h3>File Formats</h3>
+      <p>FASTQ → trimmed FASTQ → SAM/BAM (alignment) → VCF (variants). Each format carries different information and requires different tools.</p>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- FASTQ FORMAT -->
+<section id="s2">
+<div class="container reveal">
+  <div class="section-label">02 — FASTQ Format</div>
+  <h2 class="section-title">The <em>FASTQ</em> File Format</h2>
+
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2rem;font-size:.92rem;">The FASTQ file is the most common raw data output from NGS sequencing platforms. It is a text-based file format that stores both the nucleotide sequences of reads and the quality score associated with each base call.</p>
+
+  <div class="section-label">Each read = exactly 4 lines</div>
+  <div class="fastq-box" style="margin-bottom:2rem;">
+    <div class="l1">@FORJUSP02AJWD1 <span class="anno">← Line 1: Read identifier (instrument, flowcell, lane, tile, coordinates)</span></div>
+    <div class="l2">CCGTCAATTCATTTAAGTTTTAACCTTGCGGCCGTACTCCCCAGGCGGT <span class="anno">← Line 2: Read sequence (DNA bases)</span></div>
+    <div class="l3">+ <span class="anno">← Line 3: "+" sign (optional: followed by sequence identifier again)</span></div>
+    <div class="l4">AAAAAAAAAAAAA::99@::::??@@::FFAAAAACCAA::::BB@@7A? <span class="anno">← Line 4: Quality scores (ASCII characters, one per base)</span></div>
+  </div>
+
+  <div class="cards" style="margin-bottom:2rem;">
+    <div class="card" style="--c:var(--accent)">
+      <h3>Quality Scores (Phred)</h3>
+      <p>Each ASCII character encodes a Phred quality score Q. <strong>Q = -10 × log₁₀(P)</strong> where P = probability of base call being wrong. Q20 = 99% accuracy, Q30 = 99.9% accuracy, Q40 = 99.99% accuracy.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2)">
+      <h3>Encoding</h3>
+      <p>Quality scores are encoded as ASCII characters. Modern Illumina uses <strong>Illumina 1.5 encoding</strong> (ASCII 64 offset). The ASCII value minus the offset gives the Phred score.</p>
+    </div>
+    <div class="card" style="--c:var(--accent3)">
+      <h3>Other Formats</h3>
+      <p><strong>PacBio:</strong> bas.h5/bax.h5 → HDFView. <strong>Illumina:</strong> BCL binary base call format → bcl2fastq conversion. FASTQ ORA = binary compressed format, up to 5× smaller than .fastq.gz.</p>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- FASTQC TOOL -->
+<section id="s3">
+<div class="container reveal">
+  <div class="section-label">03 — FastQC Tool</div>
+  <h2 class="section-title">The <em>FastQC</em> Tool</h2>
+
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2rem;font-size:.92rem;">FastQC performs quality control checks on raw sequence data from high-throughput sequencing pipelines. It provides a modular set of analyses to give a quick impression of whether data has any quality problems before doing further analysis.</p>
+
+  <div class="cards" style="margin-bottom:2.5rem;">
+    <div class="card" style="--c:var(--accent)"><div class="card-icon">📥</div><h3>Import</h3><p>Import your data directly from a FASTQ file — no pre-processing required.</p></div>
+    <div class="card" style="--c:var(--accent2)"><div class="card-icon">🔍</div><h3>Analyse</h3><p>Analyses the sequence data and quality scores provided in the FASTQ file across multiple metrics and modules.</p></div>
+    <div class="card" style="--c:var(--accent3)"><div class="card-icon">📊</div><h3>Visualise</h3><p>Generates summary metrics and graphs to visually assess the quality of your data.</p></div>
+    <div class="card" style="--c:var(--accent4)"><div class="card-icon">📄</div><h3>Report</h3><p>Exports results as an HTML-based report. Also supports MultiQC to aggregate multiple FastQC runs into one report.</p></div>
+  </div>
+
+  <div class="info-box" style="margin-bottom:1.5rem;">
+    <strong>🖥️ Command Line Usage:</strong><br>
+    Run on multiple files: <code>$ fastqc *.fq</code><br>
+    Get help: <code>$ fastqc --help</code><br>
+    Aggregate reports: <code>$ multiqc .</code>
+  </div>
+
+  <div class="section-label">FastQC Report Modules</div>
+  <div class="db-list">
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Basic Statistics</strong><p>Filename, encoding, total sequences, filtered sequences, sequence length, %GC.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Per Base Sequence Quality</strong><p>Boxplot of quality scores across all bases at each position in the read.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Per Sequence Quality Scores</strong><p>Distribution of mean quality scores across all reads.</p></div>
+    <div class="db-item" style="--c:var(--accent4)"><strong>⚠️ Per Base Sequence Content</strong><p>Proportion of each base (A/T/G/C) at each position across all reads.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Per Base GC Content</strong><p>GC content across the whole read length.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Per Sequence GC Content</strong><p>GC content distribution compared to a modelled normal distribution.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Per Base N Content</strong><p>Percentage of N base calls at each position.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Sequence Length Distribution</strong><p>Distribution of fragment sizes across all sequences.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Sequence Duplication Levels</strong><p>Degree of sequence duplication in the library.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Overrepresented Sequences</strong><p>Sequences that appear more than expected — may indicate contamination.</p></div>
+    <div class="db-item" style="--c:var(--accent4)"><strong>⚠️ Kmer Content</strong><p>Short sequence motifs (k-mers) that are enriched at specific positions.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>✅ Adapter Content</strong><p>Cumulative proportion of adapter sequences found at each position.</p></div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- QC METRICS - QUALITY -->
+<section id="s4">
+<div class="container reveal">
+  <div class="section-label">04 — Quality Metrics</div>
+  <h2 class="section-title">FastQC Metrics — <em>Quality Scores</em></h2>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">📊 Per Base Sequence Quality</div>
+    </div>
+    <div class="qc-desc">Shows a Boxplot (Box-and-Whisker) of quality scores across all bases at each position in the read. Y-axis = Quality Score, X-axis = nucleotide position in read. The red central line = median. Yellow box = inter-quartile range (25–75%). Upper/lower whiskers = 10th and 90th percentile points.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: lower quartile &lt;10 OR median &lt;25 for any base</span>
+      <span class="qc-t f">❌ FAILURE: lower quartile &lt;5 OR median &lt;20 for any base</span>
+    </div>
+    <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted);">
+      <strong style="color:var(--accent3);">GOOD DATA:</strong> Most reads HIGH quality — boxes stay in the green zone throughout the read length.<br>
+      <strong style="color:var(--accent);">BAD DATA:</strong> General degradation of quality with increasing read length (chemistry limit — normal for longer reads).
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">📈 Per Sequence Quality Scores</div>
+    </div>
+    <div class="qc-desc">Shows if a subset of sequences are of consistently low quality. Plots the distribution of mean quality scores across all reads. Good data shows a single sharp peak at a high quality score. Bad data shows a bi-modal or complex distribution with a secondary peak at low quality.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: most frequently observed mean quality &lt;27 (0.2% error rate)</span>
+      <span class="qc-t f">❌ FAILURE: most frequently observed mean quality &lt;20 (1% error rate)</span>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- QC METRICS - CONTENT -->
+<section id="s5">
+<div class="container reveal">
+  <div class="section-label">05 — Content Metrics</div>
+  <h2 class="section-title">FastQC Metrics — <em>Sequence Content</em></h2>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">🔤 Per Base Sequence Content</div>
+    </div>
+    <div class="qc-desc">Shows the proportion of each base (A, T, G, C) called at each position across all reads. In good data, the four lines should run parallel and relatively flat — each base should appear ~25% of the time in a random library.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: difference between A and T, or G and C &gt;10% at any position</span>
+      <span class="qc-t f">❌ FAILURE: difference between A and T, or G and C &gt;20% at any position</span>
+    </div>
+    <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted);">
+      <strong style="color:var(--accent);">BAD DATA may indicate:</strong> Over-represented sequences, biased library preparation, or adapter contamination.
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">🔵 Per Sequence GC Content</div>
+    </div>
+    <div class="qc-desc">Compares the GC content distribution across all reads to a modelled normal distribution. Good data shows a smooth normal distribution centred around the expected GC% for the species. Bad data shows sharp peaks (sequence contaminant) or broad secondary peaks (species contaminant).</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: sum of deviations from normal distribution &gt;15% of reads</span>
+      <span class="qc-t f">❌ FAILURE: sum of deviations from normal distribution &gt;30% of reads</span>
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">❓ Per Base N Content</div>
+    </div>
+    <div class="qc-desc">Shows the percentage of base calls at each position for which an N was called (N = ambiguous base, the sequencer couldn't determine the base). In good data this should be essentially zero at all positions.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: any position shows N content &gt;5%</span>
+      <span class="qc-t f">❌ FAILURE: any position shows N content &gt;20%</span>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- QC METRICS - OTHER -->
+<section id="s6">
+<div class="container reveal">
+  <div class="section-label">06 — Other Metrics</div>
+  <h2 class="section-title">FastQC Metrics — <em>Duplication & Adapters</em></h2>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">📋 Sequence Length Distribution</div>
+    </div>
+    <div class="qc-desc">Distribution of fragment sizes. Some libraries produce reads of uniform length; others vary. For some sequencing platforms (e.g., PacBio, Nanopore) variable read lengths are entirely normal.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: if all sequences are not of the same length</span>
+      <span class="qc-t f">❌ FAILURE: if any sequences have length = 0</span>
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">🔁 Sequence Duplication Level</div>
+    </div>
+    <div class="qc-desc">In a diverse library most sequences will occur only once. Higher duplication = PCR amplification bias. Note: higher duplication is <strong>expected in Transcriptomics (RNA-seq)</strong> where highly expressed genes naturally produce many identical reads.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: non-unique sequences &gt;20% of total</span>
+      <span class="qc-t f">❌ FAILURE: non-unique sequences &gt;50% of total</span>
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">⚠️ Overrepresented Sequences</div>
+    </div>
+    <div class="qc-desc">If a single sequence is very overrepresented, it may be biologically significant (e.g., rRNA) or indicate library contamination. For small RNA libraries, overrepresentation is normal since they are not randomly fragmented.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: any sequence represents &gt;0.1% of total</span>
+      <span class="qc-t f">❌ FAILURE: any sequence represents &gt;1% of total</span>
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">🔌 Adapter Content</div>
+    </div>
+    <div class="qc-desc">Cumulative percentage of the proportion of reads that contain adapter sequences at each position. Adapters are short artificial sequences ligated to library fragments — they must be removed before alignment. If present in reads, the insert size was shorter than the read length.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: any adapter sequence present in &gt;5% of all reads</span>
+      <span class="qc-t f">❌ FAILURE: any adapter sequence present in &gt;10% of all reads</span>
+    </div>
+  </div>
+
+  <div class="qc-metric">
+    <div class="qc-metric-header">
+      <div class="qc-metric-name">🔤 Kmer Content</div>
+    </div>
+    <div class="qc-desc">Analyses short sequence k-mers (typically 5-7 bp) that are enriched at specific positions. Platform-dependent — libraries with random priming will nearly always show Kmer bias at the start. Usually not detrimental.</div>
+    <div class="qc-thresholds">
+      <span class="qc-t w">⚠️ WARNING: k-mer imbalanced with binomial p-value &lt;0.01</span>
+      <span class="qc-t f">❌ FAILURE: k-mer imbalanced with binomial p-value &lt;10⁻⁵</span>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- INTERPRETING -->
+<section id="s7">
+<div class="container reveal">
+  <div class="section-label">07 — Interpretation</div>
+  <h2 class="section-title">Interpreting FastQC — <em>Warnings & Action</em></h2>
+
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2rem;font-size:.92rem;"><strong style="color:var(--accent4);">⚠️ Important:</strong> Warnings and failures should be taken cautiously but may not be detrimental for the rest of the analysis — they might even be <em>expected</em> depending on the library type.</p>
+
+  <div class="cards" style="margin-bottom:2.5rem;">
+    <div class="card" style="--c:var(--accent4)">
+      <div class="card-icon">🔁</div>
+      <h3>Duplication — Context Matters</h3>
+      <p><strong>Genomics:</strong> Low duplication expected (random fragmentation). <strong>Transcriptomics:</strong> Higher duplication expected for highly expressed genes — a WARNING here is likely normal and acceptable.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2)">
+      <div class="card-icon">⚠️</div>
+      <h3>Overrepresented Sequences</h3>
+      <p>In small RNA libraries, sequences are not randomly fragmented, so the same sequence may naturally appear very often. This is expected and not a library quality problem.</p>
+    </div>
+    <div class="card" style="--c:var(--accent)">
+      <div class="card-icon">🔤</div>
+      <h3>Kmer Content</h3>
+      <p>Kmer bias at the start of reads is almost always platform-specific. Libraries with random priming will nearly always show this bias — it's an artifact, not a quality problem.</p>
+    </div>
+  </div>
+
+  <div class="section-label">When to Trim</div>
+  <p style="color:var(--muted);margin-bottom:1.5rem;font-size:.9rem;">If reads show genuine quality problems, perform <strong>sequence filtering / trimming</strong> before alignment:</p>
+
+  <div class="db-list">
+    <div class="db-item" style="--c:var(--accent)"><strong>Mean Quality</strong><p>Remove reads below a mean quality threshold (e.g., Q20).</p></div>
+    <div class="db-item" style="--c:var(--accent2)"><strong>Read Length</strong><p>Remove reads shorter than a minimum length after trimming.</p></div>
+    <div class="db-item" style="--c:var(--accent3)"><strong>Quality Trimming</strong><p>Trim low-quality bases from the 3' end until a quality threshold is met.</p></div>
+    <div class="db-item" style="--c:var(--accent4)"><strong>Adapter Trimming</strong><p>Detect and remove adapter sequences from reads using tools like Trimmomatic or Cutadapt.</p></div>
+    <div class="db-item" style="--c:var(--accent)"><strong>% Bases Above Threshold</strong><p>Remove reads where fewer than X% of bases are above a minimum quality score.</p></div>
+    <div class="db-item" style="--c:var(--accent2)"><strong>Adapter Reads</strong><p>Remove entire reads that consist primarily of adapter sequence (insert too short).</p></div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- SUMMARY -->
+<section id="s8">
+<div class="container reveal">
+  <div class="section-label">08 — Summary</div>
+  <h2 class="section-title">What You Should <em>Remember</em></h2>
+  <div class="summary-box">
+    <ul>
+      <li>NGS produces FASTQ files — text files containing reads (sequences) and per-base quality scores (Phred).</li>
+      <li>Each FASTQ read is defined by exactly 4 lines: identifier, sequence, "+", and quality scores as ASCII characters.</li>
+      <li>FastQC performs QC on raw FASTQ data and exports an HTML report with 12 metric modules.</li>
+      <li>Per Base Sequence Quality — the most important metric; quality should stay high (green zone) across all positions.</li>
+      <li>Per Sequence GC Content — should follow a smooth normal distribution; deviations suggest contamination.</li>
+      <li>Sequence Duplication — expected to be low in genomics but higher in transcriptomics (RNA-seq).</li>
+      <li>Warnings and failures are context-dependent — they may be expected for certain library types (Kmer, small RNA).</li>
+      <li>If genuine quality problems exist, perform trimming (Trimmomatic, Cutadapt) before alignment to improve downstream results.</li>
+      <li>MultiQC can aggregate multiple FastQC reports into a single overview — essential for batch NGS experiments.</li>
+    </ul>
+  </div>
+  <p style="text-align:center;margin-top:2.5rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.1em;">END OF CHAPTER 5 — Next-Generation Sequencing & FastQC Quality Control</p>
+</div>
+</section>
+
+<script>
+  const secs=document.querySelectorAll('section[id]'),dots=document.querySelectorAll('.ndot');
+  dots.forEach((d,i)=>d.onclick=()=>secs[i].scrollIntoView({behavior:'smooth'}));
+  const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const io2=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){const i=[...secs].indexOf(x.target);dots.forEach((d,j)=>d.classList.toggle('active',j===i));}}),{threshold:.4});
+  secs.forEach(s=>io2.observe(s));
+</script>
+</body>
+</html>
