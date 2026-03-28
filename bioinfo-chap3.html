@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 3 — Advanced Literature Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f1a; --surface:#111827; --surface2:#1a2236;
+    --accent:#3b82f6; --accent2:#00d4aa; --accent3:#f59e0b; --accent4:#ec4899;
+    --text:#e2e8f0; --muted:#94a3b8; --border:#1e3a5f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px);background-size:70px 70px;pointer-events:none;z-index:0;}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4rem 2rem;position:relative;z-index:1;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,0.14) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,212,170,0.08) 0%,transparent 60%);}
+  .badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(59,130,246,.3);padding:.35rem 1.1rem;border-radius:2px;margin-bottom:2rem;animation:fadeUp .8s ease both;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,7vw,5rem);font-weight:900;line-height:1.05;margin-bottom:1.2rem;animation:fadeUp .8s ease .12s both;}
+  .hero h1 em{color:var(--accent);font-style:normal;}
+  .hero p{max-width:540px;color:var(--muted);font-size:1rem;margin-bottom:3rem;animation:fadeUp .8s ease .24s both;}
+  .chips{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s ease .36s both;}
+  .chip{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:4px;padding:.4rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent);}
+  .scroll-cue{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+  .scroll-cue::after{content:'';width:1px;height:40px;background:linear-gradient(var(--accent),transparent);}
+
+  /* LAYOUT */
+  .container{max-width:1100px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
+  section{padding:5rem 0;}
+  .section-label{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.8rem;}
+  .section-label::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(var(--border),transparent);}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin-bottom:2.5rem;line-height:1.2;}
+  .section-title em{color:var(--accent);font-style:normal;}
+  hr.div{border:none;height:1px;background:linear-gradient(transparent,var(--border),transparent);}
+
+  /* CARDS */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.4rem;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.6rem;transition:border-color .25s,transform .25s;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c,var(--accent));opacity:.5;transition:opacity .25s;}
+  .card:hover{border-color:var(--c,var(--accent));transform:translateY(-3px);}
+  .card:hover::before{opacity:1;}
+  .card-icon{font-size:1.5rem;margin-bottom:1rem;}
+  .card h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:.5rem;}
+  .card p{color:var(--muted);font-size:.86rem;line-height:1.65;}
+
+  /* DB LIST */
+  .db-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;}
+  .db-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c,var(--accent));border-radius:0 6px 6px 0;padding:1.1rem 1.4rem;}
+  .db-item strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--c,var(--accent));margin-bottom:.3rem;}
+  .db-item p{font-size:.82rem;color:var(--muted);}
+
+  /* TAG TABLE */
+  .tag-table{width:100%;border-collapse:collapse;font-size:.85rem;overflow:hidden;border-radius:8px;}
+  .tag-table th{background:var(--surface2);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.9rem 1.1rem;text-align:left;border-bottom:1px solid var(--border);}
+  .tag-table td{padding:.85rem 1.1rem;border-bottom:1px solid rgba(30,58,95,.5);color:var(--muted);vertical-align:top;}
+  .tag-table tr:hover td{background:rgba(255,255,255,.02);}
+  .tag-table td:first-child{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:.82rem;}
+  .tag-table td:nth-child(2){color:var(--accent3);font-weight:500;}
+
+  /* BOOLEAN DIAGRAM */
+  .bool-wrap{display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center;justify-content:center;margin:2rem 0;}
+  .bool-circle{width:140px;height:140px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:500;}
+  .bc-and{background:rgba(0,212,170,.12);border:2px solid rgba(0,212,170,.4);color:var(--accent2);}
+  .bc-or{background:rgba(59,130,246,.12);border:2px solid rgba(59,130,246,.4);color:var(--accent);}
+  .bc-not{background:rgba(236,72,153,.12);border:2px solid rgba(236,72,153,.4);color:var(--accent4);}
+  .bool-circle span{font-size:.65rem;color:var(--muted);margin-top:.3rem;}
+  .bool-op{font-family:'Playfair Display',serif;font-size:2rem;color:var(--muted);}
+
+  /* STEPS */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;counter-reset:step;}
+  .step{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.4rem;position:relative;counter-increment:step;}
+  .step::before{content:counter(step);position:absolute;top:-12px;left:1.2rem;background:var(--accent);color:#0a0f1a;font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:600;padding:.15rem .5rem;border-radius:3px;}
+  .step h4{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--text);margin-bottom:.4rem;margin-top:.3rem;}
+  .step p{font-size:.8rem;color:var(--muted);}
+
+  /* SUMMARY BOX */
+  .summary-box{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(0,212,170,.06));border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:3rem;}
+  .summary-box ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;}
+  .summary-box li{display:flex;gap:.75rem;align-items:flex-start;font-size:.88rem;color:var(--muted);}
+  .summary-box li::before{content:'▹';color:var(--accent);flex-shrink:0;margin-top:.1rem;}
+
+  /* NAV */
+  nav{position:fixed;top:0;right:0;padding:1.5rem;display:flex;flex-direction:column;gap:.5rem;z-index:100;}
+  .ndot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s;position:relative;}
+  .ndot:hover,.ndot.active{background:var(--accent);transform:scale(1.3);}
+  .ndot[title]:hover::after{content:attr(title);position:absolute;right:1.4rem;top:-.3rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:.68rem;padding:.25rem .6rem;border-radius:3px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;}
+
+  /* BACK LINK */
+  .back-btn{position:fixed;top:1.5rem;left:1.5rem;z-index:100;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);text-decoration:none;border:1px solid rgba(59,130,246,.3);padding:.4rem .9rem;border-radius:3px;background:rgba(10,15,26,.8);backdrop-filter:blur(6px);transition:border-color .2s,background .2s;}
+  .back-btn:hover{border-color:var(--accent);background:rgba(59,130,246,.08);}
+
+  /* REVEAL */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  /* INFO BOX */
+  .info-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:1.4rem 1.6rem;font-size:.88rem;color:var(--muted);}
+  .info-box strong{color:var(--accent3);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<a class="back-btn" href="./index.html">← Index</a>
+
+<nav id="nav">
+  <div class="ndot" title="Home"></div>
+  <div class="ndot" title="Why Literature Search"></div>
+  <div class="ndot" title="Resources"></div>
+  <div class="ndot" title="MEDLINE & PubMed"></div>
+  <div class="ndot" title="Search Steps"></div>
+  <div class="ndot" title="Boolean Operators"></div>
+  <div class="ndot" title="Field Tags"></div>
+  <div class="ndot" title="MeSH Terms"></div>
+  <div class="ndot" title="Summary"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="s0">
+  <div class="badge">Bioinformatics — Chapter 3</div>
+  <h1>Advanced <em>Literature</em><br>Search</h1>
+  <p>Master the art of finding the right scientific paper in a sea of millions — using PubMed, Boolean operators, field tags, and MeSH controlled vocabulary.</p>
+  <div class="chips">
+    <span class="chip">📚 PubMed / MEDLINE</span>
+    <span class="chip">🔎 Boolean Operators</span>
+    <span class="chip">🏷️ Field Tags</span>
+    <span class="chip">🧬 MeSH Terms</span>
+    <span class="chip">🔬 Advanced Queries</span>
+  </div>
+  <div class="scroll-cue">scroll</div>
+</section>
+<hr class="div">
+
+<!-- WHY LITERATURE SEARCH -->
+<section id="s1">
+<div class="container reveal">
+  <div class="section-label">01 — Introduction</div>
+  <h2 class="section-title">Why Is Literature Searching <em>Challenging?</em></h2>
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2.5rem;font-size:.95rem;">Literature searching is an <strong>essential aspect of all research</strong>. Most resources are now electronically available — yet this doesn't make retrieval easier. The challenge is not finding answers, it's finding the <em>right</em> ones.</p>
+
+  <div class="cards" style="margin-bottom:2.5rem;">
+    <div class="card" style="--c:var(--accent)">
+      <div class="card-icon">🌊</div>
+      <h3>Volume Problem</h3>
+      <p>Google can return 100,000 results for any query. Without a strategy, sifting through them is an impossible task. You need a librarian's precision, not a search engine's breadth.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2)">
+      <div class="card-icon">🎯</div>
+      <h3>Precision vs Recall</h3>
+      <p>Too broad → irrelevant noise. Too narrow → miss important papers. The goal is a search that is <strong>sensitive</strong> enough to capture all relevant work, yet <strong>specific</strong> enough to avoid useless hits.</p>
+    </div>
+    <div class="card" style="--c:var(--accent3)">
+      <div class="card-icon">🗣️</div>
+      <h3>Vocabulary Problem</h3>
+      <p>Different authors use different words for the same concept. Without controlled vocabulary (like MeSH), searches miss synonyms and alternative terms used across the literature.</p>
+    </div>
+    <div class="card" style="--c:var(--accent4)">
+      <div class="card-icon">📅</div>
+      <h3>Currency</h3>
+      <p>Science moves fast. A search must capture the most up-to-date literature, which requires databases that are frequently updated and indexed promptly after publication.</p>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- RESOURCES -->
+<section id="s2">
+<div class="container reveal">
+  <div class="section-label">02 — Literature Resources</div>
+  <h2 class="section-title">Popular <em>Literature</em> Databases</h2>
+
+  <div class="db-list" style="margin-bottom:3rem;">
+    <div class="db-item" style="--c:var(--accent)">
+      <strong>Google Scholar</strong>
+      <p>Specialised Google search engine for academic literature across all disciplines. Broad coverage but limited filtering capabilities compared to curated databases.</p>
+    </div>
+    <div class="db-item" style="--c:var(--accent2)">
+      <strong>PubMed</strong>
+      <p>Bibliographical database run by the NCBI covering a wide range of biomedical literature including MEDLINE. Free, highly curated, and searchable with advanced syntax.</p>
+    </div>
+    <div class="db-item" style="--c:var(--accent3)">
+      <strong>PubMed Clinical Queries</strong>
+      <p>A specialised PubMed search interface optimised for searching clinical data — filters by study type, clinical study category, and medical genetics.</p>
+    </div>
+    <div class="db-item" style="--c:var(--accent4)">
+      <strong>Scopus</strong>
+      <p>The largest abstract and citation database of peer-reviewed literature across all scientific domains. Useful for citation tracking and author/journal metrics.</p>
+    </div>
+    <div class="db-item" style="--c:var(--accent)">
+      <strong>ScienceDirect</strong>
+      <p>Linked to Scopus and Elsevier journals. Allows full-text searching across thousands of peer-reviewed journals from all scientific domains.</p>
+    </div>
+    <div class="db-item" style="--c:var(--accent2)">
+      <strong>Web of Science / Embase</strong>
+      <p>Other major commercial databases that license MEDLINE and provide additional coverage and citation analysis tools beyond PubMed's free interface.</p>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- MEDLINE & PUBMED -->
+<section id="s3">
+<div class="container reveal">
+  <div class="section-label">03 — MEDLINE & PubMed</div>
+  <h2 class="section-title">MEDLINE, PubMed — What's the <em>Difference?</em></h2>
+
+  <div class="cards" style="margin-bottom:2.5rem;">
+    <div class="card" style="--c:var(--accent); grid-column:span 1;">
+      <div class="card-icon">🏛️</div>
+      <h3>MEDLINE</h3>
+      <p style="margin-bottom:.8rem;">Produced by the <strong>US National Library of Medicine (NLM)</strong> — the world's largest medical library. NLM has been indexing biomedical literature since 1897. The printed index (<em>Index Medicus</em>) was converted into the database known today as MEDLINE, which now holds over 24 million citations.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2);">
+      <div class="card-icon">🔍</div>
+      <h3>PubMed</h3>
+      <p style="margin-bottom:.8rem;"><strong>PubMed (Public MEDLINE)</strong> is NLM's free search engine interface for MEDLINE. Since 1996, free access to MEDLINE has been made available to the public via PubMed at NCBI. PubMed also contains citations from additional biomedical journals and books beyond MEDLINE, giving access to over <strong>30 million citations</strong>.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Why use PubMed / MEDLINE?</div>
+  <div class="cards">
+    <div class="card" style="--c:var(--accent3)"><div class="card-icon">✅</div><h3>Comprehensive & Current</h3><p>Up-to-date information from credible, peer-reviewed biomedical sources across all life science fields.</p></div>
+    <div class="card" style="--c:var(--accent)"><div class="card-icon">🗂️</div><h3>Controlled Vocabulary</h3><p>MeSH terms ensure consistent indexing — searches retrieve articles regardless of the exact synonym used by the author.</p></div>
+    <div class="card" style="--c:var(--accent2)"><div class="card-icon">📄</div><h3>Abstract & Full Text</h3><p>Abstracts always available; many articles link to free full text via PubMed Central (PMC) or publisher sites.</p></div>
+    <div class="card" style="--c:var(--accent4)"><div class="card-icon">🔧</div><h3>Advanced Filtering</h3><p>Filter by article type, date, species, language, sex, age group, and text availability to narrow your results efficiently.</p></div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- SEARCH STEPS -->
+<section id="s4">
+<div class="container reveal">
+  <div class="section-label">04 — Search Strategy</div>
+  <h2 class="section-title">Literature Search <em>Steps</em></h2>
+
+  <p style="color:var(--muted);max-width:640px;margin-bottom:2.5rem;font-size:.92rem;">Using the <strong>FOXP2 example</strong> from the slides: studying genetic variation in FOXP2 and its impact on speech development disorders.</p>
+
+  <div class="steps" style="margin-bottom:3rem;">
+    <div class="step"><h4>Clearly define your question</h4><p>Know exactly what information you are looking for before you start. e.g. "mutations in FOXP2 linked to speech development disorders."</p></div>
+    <div class="step"><h4>Break into keywords</h4><p>Decompose your question: <strong>FOXP2</strong> + <strong>speech development</strong> + <strong>mutation</strong>. Each is searched independently first.</p></div>
+    <div class="step"><h4>Identify quality sources</h4><p>Choose a single high-quality resource like PubMed rather than mixing search engines that return inconsistent quality.</p></div>
+    <div class="step"><h4>Combine with operators</h4><p>Use AND, OR, NOT to combine your keywords logically. Build up the query in the Advanced Search Builder step by step.</p></div>
+    <div class="step"><h4>Apply field tags</h4><p>Restrict terms to specific fields (Title, Abstract, Author) to improve precision. e.g. <code>foxp2[Title/Abstract]</code>.</p></div>
+    <div class="step"><h4>Refine with MeSH</h4><p>Look up MeSH terms for your keywords to find the controlled vocabulary and include the official term in your search.</p></div>
+    <div class="step"><h4>Filter results</h4><p>Apply PubMed filters: article type, date range, free full text, species, publication year to narrow to what's relevant.</p></div>
+    <div class="step"><h4>Save & export</h4><p>Save results to clipboard, My Bibliography, Collections, or export to a Citation Manager (e.g., Zotero, EndNote).</p></div>
+  </div>
+
+  <div class="info-box">
+    <strong>💡 FOXP2 Search Example:</strong><br>
+    Simple search "foxp2" → 604 results &nbsp;|&nbsp;
+    AND "speech development" → 30,109 results for that term &nbsp;|&nbsp;
+    AND "mutation" → 1,093,123 results for that term &nbsp;|&nbsp;
+    Combined: <code>((foxp2) AND (speech development)) AND (mutation)</code> → <strong>92 results</strong>. Adding <code>[Title/Abstract]</code> tags → <strong>3 highly specific results</strong>.
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- BOOLEAN -->
+<section id="s5">
+<div class="container reveal">
+  <div class="section-label">05 — Boolean Operators</div>
+  <h2 class="section-title">Combining Search Terms — <em>Boolean</em> Logic</h2>
+
+  <div class="bool-wrap">
+    <div class="bool-circle bc-and"><strong>AND</strong><span>Narrows — both<br>terms must appear</span></div>
+    <div class="bool-op">·</div>
+    <div class="bool-circle bc-or"><strong>OR</strong><span>Widens — either<br>term can appear</span></div>
+    <div class="bool-op">·</div>
+    <div class="bool-circle bc-not"><strong>NOT</strong><span>Excludes — removes<br>unwanted results</span></div>
+  </div>
+
+  <div class="cards" style="margin-bottom:2rem;">
+    <div class="card" style="--c:var(--accent2)">
+      <h3>AND — Narrows Search</h3>
+      <p>Retrieves records containing <strong>all</strong> the search terms. FOXP2 alone = 604. FOXP2 AND speech = 285. Fewer but more relevant results.</p>
+    </div>
+    <div class="card" style="--c:var(--accent)">
+      <h3>OR — Broadens Search</h3>
+      <p>Retrieves records containing <strong>any</strong> of the search terms. Useful for synonyms. FOXP2 OR speech = 124,578. Far more results covering either concept.</p>
+    </div>
+    <div class="card" style="--c:var(--accent4)">
+      <h3>NOT — Excludes Terms</h3>
+      <p>Removes records containing the excluded term. FOXP2 NOT speech = 319. Dangerous to overuse — can accidentally exclude relevant papers.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Other search operators</div>
+  <div class="cards">
+    <div class="card" style="--c:var(--accent3)">
+      <div class="card-icon">✂️</div>
+      <h3>Truncation — Wildcard *</h3>
+      <p><code>Child*</code> retrieves Child, Children, Childhood, Childlike. The asterisk (*) stands for any characters. Great for plurals and variant endings.</p>
+    </div>
+    <div class="card" style="--c:var(--accent)">
+      <div class="card-icon">💬</div>
+      <h3>Phrase Search — Quotation Marks</h3>
+      <p><code>"copy number variation"</code> searches for the exact phrase. Without quotes, PubMed may search each word independently and combine with AND.</p>
+    </div>
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- FIELD TAGS -->
+<section id="s6">
+<div class="container reveal">
+  <div class="section-label">06 — Field Tags</div>
+  <h2 class="section-title">Restrict Searches with <em>Field Tags</em></h2>
+
+  <p style="color:var(--muted);max-width:660px;margin-bottom:2rem;font-size:.9rem;">PubMed field tags restrict a search term to a specific metadata field. Written in square brackets: <code>term[TAG]</code>. The Advanced Search Builder generates these automatically from its dropdown menus.</p>
+
+  <div style="overflow-x:auto;margin-bottom:2rem;">
+    <table class="tag-table">
+      <thead><tr><th>Field Name</th><th>[TAG]</th><th>What It Searches</th></tr></thead>
+      <tbody>
+        <tr><td>All Fields</td><td>[ALL]</td><td>All searchable fields in the record (default)</td></tr>
+        <tr><td>Title</td><td>[TI]</td><td>Article title only</td></tr>
+        <tr><td>Title or Abstract</td><td>[TIAB]</td><td>Words in the article title or its abstract</td></tr>
+        <tr><td>Author</td><td>[AU]</td><td>Author name (e.g., Lai CS[AU])</td></tr>
+        <tr><td>Last Author</td><td>[LASTAU]</td><td>Last personal author in the citation</td></tr>
+        <tr><td>Full Author Name</td><td>[FAU]</td><td>Full author name (2002 onward)</td></tr>
+        <tr><td>Journal Title</td><td>[TA]</td><td>Journal name, abbreviation, or ISSN</td></tr>
+        <tr><td>Publication Date</td><td>[PD]</td><td>Date article was published (e.g. 2001[PD])</td></tr>
+        <tr><td>Publication Type</td><td>[PT]</td><td>Format: letter, clinical trial, review, etc.</td></tr>
+        <tr><td>MeSH Major Topic</td><td>[MAJR]</td><td>Main MeSH topic of an article</td></tr>
+        <tr><td>MeSH Terms</td><td>[MH]</td><td>Any assigned MeSH term</td></tr>
+        <tr><td>MeSH Subheading</td><td>[SH]</td><td>Chemical or substance subheading</td></tr>
+        <tr><td>Text Word</td><td>[TW]</td><td>All textual fields of the PubMed record</td></tr>
+        <tr><td>Substance Name</td><td>[NM]</td><td>Substance names discussed in the article</td></tr>
+        <tr><td>Language</td><td>[LA]</td><td>Language of the article (not the abstract)</td></tr>
+        <tr><td>Year</td><td>[DP]</td><td>Year published — e.g. 2000:2009[DP] for range</td></tr>
+        <tr><td>Affiliation</td><td>[AD]</td><td>First author's institutional affiliation</td></tr>
+        <tr><td>Pagination</td><td>[PG]</td><td>First page number of the article</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <strong>🔬 FOXP2 Precision Example:</strong> Searching <code>foxp2[Title/Abstract]</code> → 555 results. Adding <code>AND (speech development[Title/Abstract]) AND (mutation[Title/Abstract])</code> → 3 results. Then replacing "speech development" with the correct MeSH term "language development disorders[MH]" → <strong>13 highly specific results</strong> including the original landmark Lai et al. 2001 paper.
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- MESH TERMS -->
+<section id="s7">
+<div class="container reveal">
+  <div class="section-label">07 — MeSH Terms</div>
+  <h2 class="section-title">Medical Subject Headings — <em>MeSH</em></h2>
+
+  <p style="color:var(--muted);max-width:680px;margin-bottom:2.5rem;font-size:.92rem;">MeSH is a <strong>controlled vocabulary</strong> — a set of standardised terms used by the NLM to index MEDLINE articles. Subject specialists read every article and assign the appropriate MeSH terms to it.</p>
+
+  <div class="cards" style="margin-bottom:2.5rem;">
+    <div class="card" style="--c:var(--accent)">
+      <div class="card-icon">📖</div>
+      <h3>What is MeSH?</h3>
+      <p>Medical Subject Headings — a hierarchical taxonomy maintained by NLM. It ensures that articles about the same topic are grouped together, regardless of the exact terminology each author used.</p>
+    </div>
+    <div class="card" style="--c:var(--accent2)">
+      <div class="card-icon">👩‍⚕️</div>
+      <h3>How Articles Get MeSH Terms</h3>
+      <p>NLM subject specialists read each article and assign the most appropriate MeSH terms based on the article's content — not just its keywords. This is manual curation at scale.</p>
+    </div>
+    <div class="card" style="--c:var(--accent3)">
+      <div class="card-icon">🌳</div>
+      <h3>Hierarchical Structure</h3>
+      <p>"Speech development" in MeSH → <em>Diseases → Nervous System → Neurologic Manifestations → Communication Disorders → Language Disorders → Language Development Disorders → Specific Language Disorder</em>.</p>
+    </div>
+    <div class="card" style="--c:var(--accent4)">
+      <div class="card-icon">🎯</div>
+      <h3>Why Use MeSH?</h3>
+      <p>Searching "speech development" as free text misses articles where the author wrote "language development disorders" or "verbal communication delay." MeSH catches them all with one term.</p>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>💡 MeSH Search Tip:</strong> Before searching PubMed, visit the <strong>MeSH Browser</strong> (mesh.nlm.nih.gov) and look up your keyword. The browser shows you the correct MeSH term, its hierarchy, and related terms. Then use that official term with the <code>[MH]</code> tag in your PubMed query for maximum precision.
+  </div>
+</div>
+</section>
+<hr class="div">
+
+<!-- SUMMARY -->
+<section id="s8">
+<div class="container reveal">
+  <div class="section-label">08 — Summary</div>
+  <h2 class="section-title">What You Should <em>Remember</em></h2>
+  <div class="summary-box">
+    <ul>
+      <li>Literature searching is less frustrating when you select a single high-quality resource like PubMed.</li>
+      <li>Break your research question into individual keywords and search each one first to understand result counts.</li>
+      <li>Use AND to narrow, OR to broaden, and NOT to exclude — building your query step by step in the Advanced Search Builder.</li>
+      <li>Use quotation marks for exact phrases and asterisk (*) truncation for variant word endings.</li>
+      <li>Field tags ([TI], [TIAB], [AU], [DP]) restrict a term to a specific metadata field and dramatically improve precision.</li>
+      <li>MeSH terms are controlled vocabulary assigned by NLM specialists — always look up the official MeSH term for your keywords.</li>
+      <li>PubMed's advanced search history lets you combine prior searches by their number (e.g., #1 AND #2 AND #3).</li>
+      <li>Use PubMed filters (article type, date, free full text) and display options to refine your final result set.</li>
+    </ul>
+  </div>
+  <p style="text-align:center;margin-top:2.5rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.1em;">END OF CHAPTER 3 — Advanced Literature Search</p>
+</div>
+</section>
+
+<script>
+  const secs=document.querySelectorAll('section[id]'),dots=document.querySelectorAll('.ndot');
+  function scrollTo(i){secs[i].scrollIntoView({behavior:'smooth'});}
+  dots.forEach((d,i)=>d.onclick=()=>scrollTo(i));
+  new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){const i=[...secs].indexOf(x.target);dots.forEach((d,j)=>d.classList.toggle('active',j===i));}}),{threshold:.4}).observe||secs.forEach(s=>s);
+  const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const io2=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){const i=[...secs].indexOf(x.target);dots.forEach((d,j)=>d.classList.toggle('active',j===i));}}),{threshold:.4});
+  secs.forEach(s=>io2.observe(s));
+</script>
+</body>
+</html>
